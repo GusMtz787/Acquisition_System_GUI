@@ -1,0 +1,602 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1365</width>
+    <height>888</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QScrollArea" name="scrollArea">
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(255,255,255)
+
+</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Plain</enum>
+      </property>
+      <property name="widgetResizable">
+       <bool>true</bool>
+      </property>
+      <widget class="QWidget" name="scrollAreaWidgetContents">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>1330</width>
+         <height>1357</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_3">
+        <item row="4" column="0" colspan="2">
+         <widget class="QFrame" name="frame">
+          <property name="styleSheet">
+           <string notr="true">background-color:rgba(214, 214, 214,100%);
+border-radius: 20px;</string>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>9</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item row="1" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <property name="spacing">
+              <number>4</number>
+             </property>
+             <item>
+              <widget class="QPushButton" name="btn_activate">
+               <property name="font">
+                <font>
+                 <family>Lato</family>
+                 <pointsize>10</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QPushButton {
+	background-color:rgba(0, 0, 0, 0%);
+	border: 1px solid rgb(0, 133, 199);
+	max-height: 30px;
+	padding: 5px;
+	color: rgb(0, 133, 199);
+	border-radius: 20px;
+}
+
+QPushButton:hover {
+	background-color: rgb(0, 133, 199);
+	border: none;
+    max-width: 150px;
+	padding: 5px;
+	color: rgb(255,255,255);
+	border-radius: 10px;
+}
+
+QPushButton:pressed {
+	background-color: rgb(0, 154, 231);
+	border: none;
+    max-width: 150px;
+	padding: 5px;
+	color: rgb(255,255,255);
+	border-radius: 10px;
+}
+
+QPushButton:disabled {
+	background-color:rgba(0, 0, 0, 0%);
+	border: 1px solid rgba(158, 158, 158, 0.6);
+	max-width: 150px;
+	padding: 5px;
+	color: rgba(158, 158, 158, 0.6);
+	border-radius: 10px;
+}</string>
+               </property>
+               <property name="text">
+                <string>Start</string>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>Icons/play.svg</normaloff>Icons/play.svg</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btn_deactivate">
+               <property name="font">
+                <font>
+                 <family>Lato</family>
+                 <pointsize>10</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QPushButton {
+	background-color:rgba(0, 0, 0, 0%);
+	border: 1px solid rgb(0, 133, 199);
+	max-height: 30px;
+	padding: 5px;
+	color: rgb(0, 133, 199);
+	border-radius: 20px;
+}
+
+QPushButton:hover {
+	background-color: rgb(0, 133, 199);
+	border: none;
+ 	max-width: 150px;
+	padding: 5px;
+	color: rgb(255,255,255);
+	border-radius: 10px;
+}
+
+QPushButton:pressed {
+	background-color: rgb(0, 154, 231);
+	border: none;
+    max-width: 150px;
+	padding: 5px;
+	color: rgb(255,255,255);
+	border-radius: 10px;
+}
+
+QPushButton:disabled {
+	background-color:rgba(0, 0, 0, 0%);
+	border: 1px solid rgba(158, 158, 158, 0.6);
+	max-width: 150px;
+	padding: 5px;
+	color: rgba(158, 158, 158, 0.6);
+	border-radius: 10px;
+}</string>
+               </property>
+               <property name="text">
+                <string>Stop</string>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>Icons/stop.svg</normaloff>Icons/stop.svg</iconset>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="1">
+            <widget class="QFrame" name="status_frame">
+             <property name="styleSheet">
+              <string notr="true">background-color:rgba(0, 0, 0, 0%);</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_3">
+              <item alignment="Qt::AlignTop">
+               <widget class="QLabel" name="label_5">
+                <property name="font">
+                 <font>
+                  <family>Lato</family>
+                  <pointsize>14</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>System status:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="state">
+                <property name="font">
+                 <font>
+                  <family>Lato</family>
+                 </font>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="2">
+         <widget class="QFrame" name="mid_level_frame">
+          <property name="styleSheet">
+           <string notr="true">background-color:rgba(214, 214, 214,100%);
+border-radius: 20px;</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_5">
+           <item row="2" column="0">
+            <widget class="QFrame" name="commands_frame">
+             <property name="styleSheet">
+              <string notr="true">background-color:rgba(0, 0, 0, 0%);</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_4">
+              <property name="verticalSpacing">
+               <number>16</number>
+              </property>
+              <item row="0" column="2">
+               <widget class="QPushButton" name="btn_files">
+                <property name="font">
+                 <font>
+                  <family>Lato</family>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QPushButton {
+	background-color:rgba(0, 0, 0, 0%);
+	border: 1px solid rgb(0, 133, 199);
+	max-width: 60px;
+	padding: 5px;
+	color: rgb(0, 133, 199);
+	border-radius: 10px;
+}
+
+QPushButton:hover {
+	background-color: rgb(0, 133, 199);
+	border: none;
+	max-width: 60px;
+	padding: 5px;
+	color: rgb(255, 255, 255);
+	border-radius: 10px;
+}
+
+QPushButton:pressed {
+	background-color: rgb(0, 154, 231);
+	border: none;
+	max-width: 60px;
+	padding: 5px;
+	color: rgb(255, 255, 255);
+	border-radius: 10px;
+}
+
+QPushButton:disabled {
+	background-color:rgba(0, 0, 0, 0%);
+	border: 1px solid rgba(158, 158, 158, 0.6);
+	max-width: 60px;
+	padding: 5px;
+	color: rgba(158, 158, 158, 0.6);
+	border-radius: 10px;
+}</string>
+                </property>
+                <property name="text">
+                 <string>Browse</string>
+                </property>
+                <property name="icon">
+                 <iconset>
+                  <normaloff>Icons/folder.svg</normaloff>Icons/folder.svg</iconset>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <layout class="QHBoxLayout" name="horizontalLayout">
+                <property name="spacing">
+                 <number>28</number>
+                </property>
+                <item>
+                 <widget class="QCheckBox" name="empatica_checkBox">
+                  <property name="font">
+                   <font>
+                    <family>Lato</family>
+                    <pointsize>11</pointsize>
+                   </font>
+                  </property>
+                  <property name="layoutDirection">
+                   <enum>Qt::LeftToRight</enum>
+                  </property>
+                  <property name="autoFillBackground">
+                   <bool>false</bool>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">max-height: 50px;</string>
+                  </property>
+                  <property name="text">
+                   <string>Empatica E4</string>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>26</width>
+                    <height>16</height>
+                   </size>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                  <property name="tristate">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="liveamp_checkBox">
+                  <property name="font">
+                   <font>
+                    <family>Lato</family>
+                    <pointsize>11</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>LiveAmp</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="camera_checkBox">
+                  <property name="font">
+                   <font>
+                    <family>Lato</family>
+                    <pointsize>11</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Camera</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="files_lineEdit">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Lato</family>
+                  <pointsize>11</pointsize>
+                 </font>
+                </property>
+                <property name="autoFillBackground">
+                 <bool>false</bool>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QLineEdit {
+border: 1px solid black;
+max-height: 50px;
+border-radius:10px;
+background-color:rgba(255, 255, 255,20%);
+}
+
+
+</string>
+                </property>
+                <property name="clearButtonEnabled">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_4">
+                <property name="font">
+                 <font>
+                  <family>Lato</family>
+                  <pointsize>14</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select devices to use&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_3">
+                <property name="font">
+                 <font>
+                  <family>Lato</family>
+                  <pointsize>14</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select file download folder&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_8">
+          <property name="font">
+           <font>
+            <family>Lato</family>
+            <pointsize>20</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">padding-left: 5px;</string>
+          </property>
+          <property name="text">
+           <string>Dashboard</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_7">
+          <property name="font">
+           <font>
+            <family>Lato</family>
+            <pointsize>20</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+            <strikeout>false</strikeout>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">padding-left: 5px;</string>
+          </property>
+          <property name="text">
+           <string>Settings</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0" colspan="2">
+         <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,1">
+          <item>
+           <widget class="QWidget" name="widget" native="true">
+            <property name="styleSheet">
+             <string notr="true">background-color: rgba(214,214,214,100%);
+border-radius: 20px;
+</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout">
+             <item row="0" column="0">
+              <widget class="QLabel" name="video">
+               <property name="minimumSize">
+                <size>
+                 <width>640</width>
+                 <height>480</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background-color: rgba(0,0,0,0%);</string>
+               </property>
+               <property name="text">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QWidget" name="widget_2" native="true">
+            <property name="styleSheet">
+             <string notr="true">background-color: rgba(214,214,214,100%);
+border-radius: 20px;
+</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_8">
+             <item row="0" column="0">
+              <layout class="QGridLayout" name="empatica_graph"/>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="8" column="0" colspan="2">
+         <widget class="QWidget" name="eeg_widget" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>480</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: rgba(214,214,214,100%);
+border-radius: 20px;</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_7">
+           <item row="0" column="0">
+            <layout class="QGridLayout" name="eeg_graph"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="0" colspan="2">
+         <widget class="QFrame" name="top_frame">
+          <property name="styleSheet">
+           <string notr="true">background-color:rgba(214, 214, 214,100%);
+border-radius: 20px;
+</string>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <item>
+            <widget class="QLabel" name="label_2">
+             <property name="font">
+              <font>
+               <family>Lato</family>
+               <pointsize>22</pointsize>
+              </font>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color:rgba(0, 0, 0, 0%);
+
+</string>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#7c7c7c;&quot;&gt;Data Acquisition System&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="font">
+              <font>
+               <family>Lato</family>
+               <pointsize>23</pointsize>
+              </font>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color:rgba(0, 0, 0, 0%);</string>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:22pt; font-weight:600; color:#7c7c7c;&quot;&gt;BRAIN - MCE&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
