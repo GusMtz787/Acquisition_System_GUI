@@ -35,9 +35,9 @@ class main_GUI(QMainWindow):
         self.downloads_path = str(Path.home() / "Downloads") # to get the user's downloads Path
         self.files_lineEdit.setEnabled(False)
         self.files_lineEdit.setText("default: " + self.downloads_path)
-        self.Worker1 = Worker1()
-        self.Worker2 = Worker2()
-        self.Worker3 = Worker3()
+        self.cameraThread = cameraThread()
+        self.empaticaThread = empaticaThread()
+        self.liveampThread = liveampThread()
         self.empaticaConstructor = pg.GraphicsLayoutWidget()
         self.eegConstructor = pg.GraphicsLayoutWidget()
         self.empatica_graph.addWidget(self.empaticaConstructor) 
@@ -67,36 +67,54 @@ class main_GUI(QMainWindow):
                 self.liveamp_checkBox.isChecked() and 
                 self.camera_checkBox.isChecked()):
             self.updateControls()
-            self.Worker1.start()
-            self.Worker1.ImageUpdate.connect(self.ImageUpdateSlot)
-            self.Worker2.start()
-            self.Worker2.update_empatica.connect(self.update_Empatica_Plot)
-            self.Worker3.start()
-            self.Worker3.update_EEG.connect(self.update_EEG_plot)
+            self.cameraThread.start()
+            self.cameraThread.ImageUpdate.connect(self.ImageUpdateSlot)
+            self.empaticaThread.start()
+            self.empaticaThread.update_empatica.connect(self.update_Empatica_Plot)
+            self.liveampThread.start()
+            self.liveampThread.update_EEG.connect(self.update_EEG_plot)
         elif (self.empatica_checkBox.isChecked() and 
                 self.liveamp_checkBox.isChecked() and 
                 not(self.camera_checkBox.isChecked())):
             self.updateControls()
-            self.Worker2.start()
-            self.Worker2.update_empatica.connect(self.update_Empatica_Plot)
-            self.Worker3.start()
-            self.Worker3.update_EEG.connect(self.update_EEG_plot)
+            self.empaticaThread.start()
+            self.empaticaThread.update_empatica.connect(self.update_Empatica_Plot)
+            self.liveampThread.start()
+            self.liveampThread.update_EEG.connect(self.update_EEG_plot)
         elif (not(self.empatica_checkBox.isChecked()) and 
                 self.liveamp_checkBox.isChecked() and 
                 self.camera_checkBox.isChecked()):
             self.updateControls()
-            self.Worker1.start()
-            self.Worker1.ImageUpdate.connect(self.ImageUpdateSlot)
-            self.Worker3.start()
-            self.Worker3.update_EEG.connect(self.update_EEG_plot)
+            self.cameraThread.start()
+            self.cameraThread.ImageUpdate.connect(self.ImageUpdateSlot)
+            self.liveampThread.start()
+            self.liveampThread.update_EEG.connect(self.update_EEG_plot)
         elif (self.empatica_checkBox.isChecked() and 
                 not(self.liveamp_checkBox.isChecked()) and 
                 self.camera_checkBox.isChecked()):
             self.updateControls()
-            self.Worker1.start()
-            self.Worker1.ImageUpdate.connect(self.ImageUpdateSlot)
-            self.Worker2.start()
-            self.Worker2.update_empatica.connect(self.update_Empatica_Plot)
+            self.cameraThread.start()
+            self.cameraThread.ImageUpdate.connect(self.ImageUpdateSlot)
+            self.empaticaThread.start()
+            self.empaticaThread.update_empatica.connect(self.update_Empatica_Plot)
+        elif (self.empatica_checkBox.isChecked() and 
+                not(self.liveamp_checkBox.isChecked()) and 
+                not(self.camera_checkBox.isChecked())):
+            self.updateControls()
+            self.empaticaThread.start()
+            self.empaticaThread.update_empatica.connect(self.update_Empatica_Plot)
+        elif (not(self.empatica_checkBox.isChecked()) and 
+                self.liveamp_checkBox.isChecked() and 
+                not(self.camera_checkBox.isChecked())):
+            self.updateControls()
+            self.liveampThread.start()
+            self.liveampThread.update_EEG.connect(self.update_EEG_plot)
+        elif (not(self.empatica_checkBox.isChecked()) and 
+                not(self.liveamp_checkBox.isChecked()) and 
+                self.camera_checkBox.isChecked()):
+            self.updateControls()
+            self.cameraThread.start()
+            self.cameraThread.ImageUpdate.connect(self.ImageUpdateSlot)
         else:
             self.noDeviceSelected_popUp()
 
@@ -119,9 +137,9 @@ class main_GUI(QMainWindow):
         self.liveamp_checkBox.setEnabled(True)
         self.camera_checkBox.setEnabled(True)
         self.state.setText("Inactive")
-        self.Worker1.terminate()
-        self.Worker2.terminate()
-        self.Worker3.terminate()
+        self.cameraThread.terminate()
+        self.empaticaThread.terminate()
+        self.liveampThread.terminate()
         saveData()
     
     # This function updates the smartband graph once the system is activated.
@@ -165,7 +183,7 @@ class main_GUI(QMainWindow):
 # # # # # CLASSES FOR ADDED WIDGETS # # # # #
 
 # Camera thread
-class Worker1(QThread):
+class cameraThread(QThread):
     frames_counter = 0
     date_emotion = ()
     emotions_array = []
@@ -179,16 +197,16 @@ class Worker1(QThread):
     ImageUpdate = pyqtSignal(QImage)
     def run(self):
         self.ThreadActive = True
-        Worker1.cap = cv2.VideoCapture(0)
+        cameraThread.cap = cv2.VideoCapture(0)
         # Select codec (.MP4) format and initialize variable that will display the video (out)
         fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-        Worker1.out = cv2.VideoWriter("Hola.mp4", fourcc, 20.0, (640,480))
+        cameraThread.out = cv2.VideoWriter("Hola.mp4", fourcc, 20.0, (640,480))
         while self.ThreadActive:
-            ret, frame = Worker1.cap.read()
+            ret, frame = cameraThread.cap.read()
             if ret:
                 frame2video = frame.copy()
                 cv2.putText(frame2video,str(datetime.now()),(380,20), cv2.FONT_HERSHEY_SIMPLEX, .5,(255,255,255),2,cv2.LINE_AA)
-                Worker1.out.write(frame2video)
+                cameraThread.out.write(frame2video)
                 Image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 FlippedImage = cv2.flip(Image, 1)
                 # We set a text in the video where we can visualize the hour with the next line
@@ -196,7 +214,7 @@ class Worker1(QThread):
                 Convert2QtFormat = QImage(FlippedImage.data, FlippedImage.shape[1], FlippedImage.shape[0], QImage.Format_RGB888)
                 Pic = Convert2QtFormat.scaled(640, 480, Qt.KeepAspectRatio)
                 self.ImageUpdate.emit(Pic)
-                if ( Worker1.frames_counter % 200 == 0): #Module of 200 if we have 20 fps, so that every 10 seconds the analysis can be done.
+                if ( cameraThread.frames_counter % 200 == 0): #Module of 200 if we have 20 fps, so that every 10 seconds the analysis can be done.
                     # Here the back end analyzes the image and tries to find an emotion
                     try:
                         result = DeepFace.analyze(frame, actions = ['emotion'], enforce_detection = True, detector_backend = 'dlib')
@@ -205,22 +223,22 @@ class Worker1(QThread):
                     # If we catch it we know there may be no person to be analyzed or the face is not clear
                     # Therefore we attach a 'ND' (Not Detected) value to the emotions array.
                     except ValueError:
-                        Worker1.date_emotion = (datetime.now().isoformat(), 'ND')
-                        Worker1.emotions_array.append(Worker1.date_emotion)
-                        Worker1.frames_counter += 1
+                        cameraThread.date_emotion = (datetime.now().isoformat(), 'ND')
+                        cameraThread.emotions_array.append(cameraThread.date_emotion)
+                        cameraThread.frames_counter += 1
                         continue
-                    Worker1.date_emotion = (datetime.now().isoformat(), result['dominant_emotion'])
-                    Worker1.emotions_array.append(Worker1.date_emotion)
-                Worker1.frames_counter += 1
+                    cameraThread.date_emotion = (datetime.now().isoformat(), result['dominant_emotion'])
+                    cameraThread.emotions_array.append(cameraThread.date_emotion)
+                cameraThread.frames_counter += 1
                 # We will store all emotions in a file every minute. This is a fail-safe measure.
-                if (Worker1.frames_counter % 1200 == 0):
+                if (cameraThread.frames_counter % 1200 == 0):
                     with open("hola.csv", 'w', newline = '') as document:
                         writer = csv.writer(document)
                         writer.writerow(['Datetime', 'emotion'])
-                        writer.writerows(Worker1.emotions_array)
+                        writer.writerows(cameraThread.emotions_array)
 
 # Empatica data acquisition
-class Worker2(QThread):
+class empaticaThread(QThread):
     # This creates a signal to be sent to the main thread (the GUI)
     update_empatica = pyqtSignal(np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray)
 
@@ -244,7 +262,7 @@ class Worker2(QThread):
             time.sleep(2)
 
 # EEG data acquisition
-class Worker3(QThread):
+class liveampThread(QThread):
     # This creates a signal to be sent to the main thread (the GUI)
     update_EEG = pyqtSignal(np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray)
 
@@ -278,12 +296,12 @@ class Worker3(QThread):
 # # # # # GENERAL FUNCTIONS # # # # #
 # Method to save data in the end of the execution.
 def saveData():
-    Worker1.cap.release()
-    Worker1.out.release()
+    cameraThread.cap.release()
+    cameraThread.out.release()
     with open("hola.csv", 'w', newline = '') as document:
         writer = csv.writer(document)
         writer.writerow(['Datetime', 'emotion'])
-        writer.writerows(Worker1.emotions_array)
+        writer.writerows(cameraThread.emotions_array)
 
 # # # # # INITIATE EXECUTION OF APP # # # # #
 if __name__ == '__main__':
