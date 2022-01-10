@@ -79,7 +79,7 @@ border-radius: 20px;</string>
                <property name="font">
                 <font>
                  <family>Lato</family>
-                 <pointsize>10</pointsize>
+                 <pointsize>14</pointsize>
                  <weight>75</weight>
                  <bold>true</bold>
                 </font>
@@ -138,7 +138,7 @@ QPushButton:disabled {
                <property name="font">
                 <font>
                  <family>Lato</family>
-                 <pointsize>10</pointsize>
+                 <pointsize>14</pointsize>
                  <weight>75</weight>
                  <bold>true</bold>
                 </font>
