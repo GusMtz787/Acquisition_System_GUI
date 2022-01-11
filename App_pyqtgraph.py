@@ -209,9 +209,9 @@ class cameraThread(QThread):
     ImageUpdate = pyqtSignal(QImage)
     def run(self):
         self.ThreadActive = True
-        cameraThread.cap = cv2.VideoCapture(0)
+        cameraThread.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW) # Added CAP_DSHOW to avoid warning emerging FOR WINDOWS ONLY!! Remove if any other OS is used.
         # Select codec (.MP4) format and initialize variable that will display the video (out)
-        fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         cameraThread.out = cv2.VideoWriter("Hola.mp4", fourcc, 20.0, (640,480))
         while self.ThreadActive:
             ret, frame = cameraThread.cap.read()
