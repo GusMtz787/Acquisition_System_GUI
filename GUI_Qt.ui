@@ -384,6 +384,7 @@ border: none;
 max-height: 50px;
 border-radius:12px;
 background-color:rgba(255, 255, 255,100%);
+color: rgb(175, 175, 175);
 }
 
 
@@ -459,7 +460,7 @@ background-color:rgba(255, 255, 255,100%);
                </widget>
               </item>
               <item row="1" column="1">
-               <widget class="QLineEdit" name="files_lineEdit_3">
+               <widget class="QLineEdit" name="idE4_lineEdit">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -493,7 +494,38 @@ background-color:rgba(255, 255, 255,100%);
                </widget>
               </item>
               <item row="0" column="1">
-               <widget class="QComboBox" name="comboBox"/>
+               <widget class="QLineEdit" name="camera_lineEdit">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Lato</family>
+                  <pointsize>11</pointsize>
+                 </font>
+                </property>
+                <property name="autoFillBackground">
+                 <bool>false</bool>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QLineEdit {
+border: none;
+max-height: 50px;
+border-radius:12px;
+background-color:rgba(255, 255, 255,100%);
+}
+
+
+
+</string>
+                </property>
+                <property name="clearButtonEnabled">
+                 <bool>false</bool>
+                </property>
+               </widget>
               </item>
              </layout>
             </widget>

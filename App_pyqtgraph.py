@@ -25,19 +25,27 @@ class main_GUI(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi(r"C:\Users\goliv\Documents\BRAIN\MCE\Acquisition_System\GUI_Qt.ui", self)
-        self.state.setText("Inactive")
-        self.video.setFont(QFont('Lato', 12))
-        self.video.setText("No video feed")
+        # Enable/disable and link buttons to functions
         self.btn_deactivate.setEnabled(False)
         self.btn_activate.clicked.connect(self.activate)
         self.btn_deactivate.clicked.connect(self.deactivate)
         self.btn_files.clicked.connect(self.browseFiles)
-        self.downloads_path = str(Path.home() / "Downloads") # to get the user's downloads Path
+        # Initialize line edits and set default texts
+        self.state.setText("Inactive")
+        self.video.setFont(QFont('Lato', 12))
+        self.video.setText("No video feed")
         self.files_lineEdit.setEnabled(False)
+        self.downloads_path = str(Path.home() / "Downloads") # to get the user's downloads Path
+        self.camera = 0
+        self.empatica_ID = "834ACD"
         self.files_lineEdit.setText("default: " + self.downloads_path)
+        self.camera_lineEdit.setPlaceholderText("default: " + str(self.camera))
+        self.idE4_lineEdit.setPlaceholderText("default: " + self.empatica_ID)
+        # Prepare Threads (not started)
         self.cameraThread = cameraThread()
         self.empaticaThread = empaticaThread()
         self.liveampThread = liveampThread()
+        # Build layouts, these are then used to graph
         self.empaticaConstructor = pg.GraphicsLayoutWidget()
         self.eegConstructor = pg.GraphicsLayoutWidget()
         self.empatica_graph.addWidget(self.empaticaConstructor) 
@@ -126,6 +134,8 @@ class main_GUI(QMainWindow):
         self.empatica_checkBox.setEnabled(False)
         self.liveamp_checkBox.setEnabled(False)
         self.camera_checkBox.setEnabled(False)
+        self.camera_lineEdit.setEnabled(False)
+        self.idE4_lineEdit.setEnabled(False)
         self.state.setText("Active")
     
     # Function to deactivate system.
@@ -136,6 +146,8 @@ class main_GUI(QMainWindow):
         self.empatica_checkBox.setEnabled(True)
         self.liveamp_checkBox.setEnabled(True)
         self.camera_checkBox.setEnabled(True)
+        self.camera_lineEdit.setEnabled(True)
+        self.idE4_lineEdit.setEnabled(True)
         self.state.setText("Inactive")
         self.cameraThread.terminate()
         self.empaticaThread.terminate()
