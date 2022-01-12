@@ -31,14 +31,15 @@ class main_GUI(QMainWindow):
         self.btn_deactivate.clicked.connect(self.deactivate)
         self.btn_files.clicked.connect(self.browseFiles)
         # Initialize line edits and set default texts
-        self.state.setText("Inactive")
+        self.state.setText("Waiting to start")
+        self.state.setStyleSheet("color: rgb(0, 133, 199);")
         self.video.setFont(QFont('Lato', 12))
         self.video.setText("No video feed")
         self.files_lineEdit.setEnabled(False)
         self.downloads_path = str(Path.home() / "Downloads") # to get the user's downloads Path
         self.camera = 0
         self.empatica_ID = "834ACD"
-        self.files_lineEdit.setText("default: " + self.downloads_path)
+        self.files_lineEdit.setPlaceholderText("default: " + self.downloads_path)
         self.camera_lineEdit.setPlaceholderText("default: " + str(self.camera))
         self.idE4_lineEdit.setPlaceholderText("default: " + self.empatica_ID)
         # Prepare Threads (not started)
@@ -136,7 +137,8 @@ class main_GUI(QMainWindow):
         self.camera_checkBox.setEnabled(False)
         self.camera_lineEdit.setEnabled(False)
         self.idE4_lineEdit.setEnabled(False)
-        self.state.setText("Active")
+        self.state.setText("Running...")
+        self.state.setStyleSheet("color: green;")
     
     # Function to deactivate system.
     def deactivate(self):
@@ -148,7 +150,8 @@ class main_GUI(QMainWindow):
         self.camera_checkBox.setEnabled(True)
         self.camera_lineEdit.setEnabled(True)
         self.idE4_lineEdit.setEnabled(True)
-        self.state.setText("Inactive")
+        self.state.setText("Waiting to start")
+        self.state.setStyleSheet("color: rgb(0, 133, 199);")
         self.cameraThread.terminate()
         self.empaticaThread.terminate()
         self.liveampThread.terminate()

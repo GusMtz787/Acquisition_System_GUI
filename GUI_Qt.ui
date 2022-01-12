@@ -39,8 +39,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>1330</width>
-         <height>1357</height>
+         <width>1322</width>
+         <height>1392</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -86,18 +86,16 @@ border-radius: 20px;</string>
                </property>
                <property name="styleSheet">
                 <string notr="true">QPushButton, QPushButton:hover, QPushButton:pressed, QPushButton:disabled  {
-	max-height: 30px;
+	max-height: 40px;
 	padding: 5px;
-	border-radius: 20px;
+	border-radius: 14px;
 }
 
 QPushButton {
 	background-color:rgba(0, 0, 0, 0%);
 	border: 1px solid rgb(0, 133, 199);
-	max-height: 30px;
 	padding: 5px;
 	color: rgb(0, 133, 199);
-	border-radius: 20px;
 }
 
 QPushButton:hover {
@@ -145,9 +143,9 @@ QPushButton:disabled {
                </property>
                <property name="styleSheet">
                 <string notr="true">QPushButton, QPushButton:hover, QPushButton:pressed, QPushButton:disabled  {
-	max-height: 30px;
+	max-height: 40px;
 	padding: 5px;
-	border-radius: 20px;
+	border-radius: 14px;
 }
 
 QPushButton {
@@ -209,6 +207,7 @@ QPushButton:disabled {
                 <property name="font">
                  <font>
                   <family>Lato</family>
+                  <pointsize>12</pointsize>
                  </font>
                 </property>
                 <property name="text">
@@ -250,9 +249,9 @@ border-radius: 20px;</string>
                 </property>
                 <property name="styleSheet">
                  <string notr="true">QPushButton, QPushButton:hover, QPushButton:pressed, QPushButton:disabled  {
-	max-width: 60px;
+	max-width: 80px;
 	padding: 5px;
-	border-radius: 12px;
+	border-radius: 10px;
 }
 
 QPushButton {
@@ -379,12 +378,12 @@ QPushButton:disabled {
                  <bool>false</bool>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QLineEdit {
+                 <string notr="true">QLineEdit, QLineEdit:disabled {
 border: none;
 max-height: 50px;
 border-radius:12px;
 background-color:rgba(255, 255, 255,100%);
-color: rgb(175, 175, 175);
+color: rgb(124, 124, 124);
 }
 
 
@@ -482,6 +481,7 @@ border: none;
 max-height: 50px;
 border-radius:12px;
 background-color:rgba(255, 255, 255,100%);
+color: rgb(124, 124, 124);
 }
 
 
@@ -516,6 +516,7 @@ border: none;
 max-height: 50px;
 border-radius:12px;
 background-color:rgba(255, 255, 255,100%);
+color: rgb(124, 124, 124);
 }
 
 
