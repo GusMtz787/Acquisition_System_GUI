@@ -1,4 +1,5 @@
 import sys
+import os
 from PyQt5 import uic
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -19,6 +20,11 @@ from pyqtgraph.functions import mkColor, mkPen
 pg.setConfigOption('background', (255,255,255,0))
 pg.setConfigOption('foreground', (0,0,0))
 
+downloads_path = ''
+start_datetime = ''
+video_fileName = ''
+emotions_fileName = ''
+
 # # # # # MAIN GUI CLASS DEFINITION # # # # #
 class main_GUI(QMainWindow):
     
@@ -36,10 +42,11 @@ class main_GUI(QMainWindow):
         self.video.setFont(QFont('Lato', 12))
         self.video.setText("No video feed")
         self.files_lineEdit.setEnabled(False)
-        self.downloads_path = str(Path.home() / "Downloads") # to get the user's downloads Path
+        global downloads_path
+        downloads_path = str(Path.home() / "Downloads") # to get the user's downloads Path
         self.camera = 0
         self.empatica_ID = "834ACD"
-        self.files_lineEdit.setPlaceholderText("default: " + self.downloads_path)
+        self.files_lineEdit.setPlaceholderText("default: " + downloads_path)
         self.camera_lineEdit.setPlaceholderText("default: " + str(self.camera))
         self.idE4_lineEdit.setPlaceholderText("default: " + self.empatica_ID)
         # Prepare Threads (not started)
@@ -67,11 +74,18 @@ class main_GUI(QMainWindow):
     def browseFiles(self):
         fileName = str(QFileDialog.getExistingDirectory(self, 'Select Directory (folder)'))
         self.files_lineEdit.setText(fileName)
+        self.downloads_path = fileName
 
     def ImageUpdateSlot(self, Image):
         self.video.setPixmap(QPixmap.fromImage(Image))
 
     def activate(self):
+        global start_datetime
+        global video_fileName
+        global emotions_fileName
+        start_datetime = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
+        video_fileName = os.path.join(downloads_path, (start_datetime + "_VI.mp4")) 
+        emotions_fileName = os.path.join(downloads_path, (start_datetime + "_FE.csv"))
         if (self.empatica_checkBox.isChecked() and 
                 self.liveamp_checkBox.isChecked() and 
                 self.camera_checkBox.isChecked()):
@@ -215,7 +229,7 @@ class cameraThread(QThread):
         cameraThread.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW) # Added CAP_DSHOW to avoid warning emerging FOR WINDOWS ONLY!! Remove if any other OS is used.
         # Select codec (.MP4) format and initialize variable that will display the video (out)
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        cameraThread.out = cv2.VideoWriter("Hola.mp4", fourcc, 20.0, (640,480))
+        cameraThread.out = cv2.VideoWriter(video_fileName, fourcc, 20.0, (640,480))
         while self.ThreadActive:
             ret, frame = cameraThread.cap.read()
             if ret:
@@ -247,7 +261,8 @@ class cameraThread(QThread):
                 cameraThread.frames_counter += 1
                 # We will store all emotions in a file every minute. This is a fail-safe measure.
                 if (cameraThread.frames_counter % 1200 == 0):
-                    with open("hola.csv", 'w', newline = '') as document:
+                    print("Sí funciono")
+                    with open(emotions_fileName, 'w', newline = '') as document:
                         writer = csv.writer(document)
                         writer.writerow(['Datetime', 'emotion'])
                         writer.writerows(cameraThread.emotions_array)
