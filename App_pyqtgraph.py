@@ -86,6 +86,7 @@ class main_GUI(QMainWindow):
         start_datetime = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
         video_fileName = os.path.join(downloads_path, (start_datetime + "_VI.mp4")) 
         emotions_fileName = os.path.join(downloads_path, (start_datetime + "_FE.csv"))
+        createCSVs()
         if (self.empatica_checkBox.isChecked() and 
                 self.liveamp_checkBox.isChecked() and 
                 self.camera_checkBox.isChecked()):
@@ -209,8 +210,7 @@ class main_GUI(QMainWindow):
         self.popUp.setIcon(QMessageBox.Warning)
         self.popUp.exec_()
 
-# # # # # CLASSES FOR ADDED WIDGETS # # # # #
-
+# # # # # CLASSES FOR DEVICES' FUNCTIONING # # # # #
 # Camera thread
 class cameraThread(QThread):
     frames_counter = 0
@@ -222,8 +222,9 @@ class cameraThread(QThread):
     # as possible. But the emotion detected by this file is NOT the one stored. The emotion stored
     # will be the one detected by the 'dlib' detector backend with the DeepFace.analyze() method.
     faceCascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-
+    # Send image to main GUI loop
     ImageUpdate = pyqtSignal(QImage)
+    # Initiate camera loop.
     def run(self):
         self.ThreadActive = True
         cameraThread.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW) # Added CAP_DSHOW to avoid warning emerging FOR WINDOWS ONLY!! Remove if any other OS is used.
@@ -261,10 +262,8 @@ class cameraThread(QThread):
                 cameraThread.frames_counter += 1
                 # We will store all emotions in a file every minute. This is a fail-safe measure.
                 if (cameraThread.frames_counter % 1200 == 0):
-                    print("Sí funciono")
-                    with open(emotions_fileName, 'w', newline = '') as document:
+                    with open(emotions_fileName, 'a', newline = '') as document:
                         writer = csv.writer(document)
-                        writer.writerow(['Datetime', 'emotion'])
                         writer.writerows(cameraThread.emotions_array)
 
 # Empatica data acquisition
@@ -324,6 +323,13 @@ class liveampThread(QThread):
             time.sleep(2)
 
 # # # # # GENERAL FUNCTIONS # # # # #
+# Create CSV files where all data will be stored continuosly.
+def createCSVs():
+        # Create emotions CSV file, which will be updated later.
+        with open(emotions_fileName, 'w', newline = '') as document:
+            writer = csv.writer(document)
+            writer.writerow(['Datetime', 'emotion'])
+
 # Method to save data in the end of the execution.
 def saveData():
     cameraThread.cap.release()
