@@ -268,26 +268,36 @@ class cameraThread(QThread):
 
 # Empatica data acquisition
 class empaticaThread(QThread):
+    x1 = []
+    y1 = []
+    x2 = []
+    y2 = []
+    x3 = []
+    y3 = []
+    x4 = []
+    y4 = []
     # This creates a signal to be sent to the main thread (the GUI)
-    update_empatica = pyqtSignal(np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray)
+    update_empatica = pyqtSignal(np.ndarray, list, np.ndarray, list, np.ndarray, list, np.ndarray, list)
 
     # This is the method that is run automatically when the worker is started.
     def run(self):
         self.ThreadActive = True
         while self.ThreadActive:
-            x1 = np.sort(np.random.randint(low=0, high=15, size=10))
-            y1 = np.random.randint(low=0, high=15, size=10)
-            x2 = np.sort(np.random.randint(low=0, high=15, size=10))
-            y2 = np.random.randint(low=0, high=15, size=10)
-            x3 = np.sort(np.random.randint(low=0, high=15, size=10))
-            y3 = np.random.randint(low=0, high=15, size=10)
-            x4 = np.sort(np.random.randint(low=0, high=15, size=10))
-            y4 = np.random.randint(low=0, high=15, size=10)
+            for _ in range(60):
+                empaticaThread.y1.append(random.randint(1,20))
+                empaticaThread.y2.append(random.randint(1,20))
+                empaticaThread.y3.append(random.randint(1,20))
+                empaticaThread.y4.append(random.randint(1,20))
+            
+            empaticaThread.x1 = np.linspace(0,len(empaticaThread.y1)-1,num= len(empaticaThread.y1))     
+            empaticaThread.x2 = np.linspace(0,len(empaticaThread.y2)-1,num= len(empaticaThread.y2))            
+            empaticaThread.x3 = np.linspace(0,len(empaticaThread.y3)-1,num= len(empaticaThread.y3))
+            empaticaThread.x4 = np.linspace(0,len(empaticaThread.y4)-1,num= len(empaticaThread.y4))
             # We share data with the main thread using the signal and the .emit() method.
             # Because the main thread is the only one able to graph things. Data can be
             # generated using threads, but any plotting or GUI stuff NEEDS to be done 
             # on the main thread.
-            self.update_empatica.emit(x1, y1, x2, y2, x3, y3, x4, y4)
+            self.update_empatica.emit(empaticaThread.x1, empaticaThread.y1, empaticaThread.x2, empaticaThread.y2, empaticaThread.x3, empaticaThread.y3, empaticaThread.x4, empaticaThread.y4)
             time.sleep(2)
 
 # EEG data acquisition
@@ -334,9 +344,8 @@ def createCSVs():
 def saveData():
     cameraThread.cap.release()
     cameraThread.out.release()
-    with open("hola.csv", 'w', newline = '') as document:
+    with open(emotions_fileName, 'a', newline = '') as document:
         writer = csv.writer(document)
-        writer.writerow(['Datetime', 'emotion'])
         writer.writerows(cameraThread.emotions_array)
 
 # # # # # INITIATE EXECUTION OF APP # # # # #
