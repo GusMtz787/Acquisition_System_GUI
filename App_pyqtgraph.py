@@ -297,39 +297,60 @@ class empaticaThread(QThread):
             # Because the main thread is the only one able to graph things. Data can be
             # generated using threads, but any plotting or GUI stuff NEEDS to be done 
             # on the main thread.
-            self.update_empatica.emit(empaticaThread.x1, empaticaThread.y1, empaticaThread.x2, empaticaThread.y2, empaticaThread.x3, empaticaThread.y3, empaticaThread.x4, empaticaThread.y4)
+            self.update_empatica.emit(empaticaThread.x1, empaticaThread.y1, empaticaThread.x2, empaticaThread.y2, 
+                                        empaticaThread.x3, empaticaThread.y3, empaticaThread.x4, empaticaThread.y4)
             time.sleep(2)
 
 # EEG data acquisition
 class liveampThread(QThread):
+    x1 = []
+    y1 = []
+    x2 = []
+    y2 = []
+    x3 = []
+    y3 = []
+    x4 = []
+    y4 = []
+    x5 = []
+    y5 = []
+    x6 = []
+    y6 = []
+    x7 = []
+    y7 = []
+    x8 = []
+    y8 = []
     # This creates a signal to be sent to the main thread (the GUI)
-    update_EEG = pyqtSignal(np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray)
+    update_EEG = pyqtSignal(np.ndarray, list, np.ndarray, list, np.ndarray, list, np.ndarray, list, np.ndarray, list, np.ndarray, list, np.ndarray, list, np.ndarray, list)
 
     # This is the method that is run automatically when the worker is started.
     def run(self):
         self.ThreadActive = True
         while self.ThreadActive:
-            x1 = np.sort(np.random.randint(low=0, high=15, size=10))
-            y1 = np.random.randint(low=0, high=15, size=10)
-            x2 = np.sort(np.random.randint(low=0, high=15, size=10))
-            y2 = np.random.randint(low=0, high=15, size=10)
-            x3 = np.sort(np.random.randint(low=0, high=15, size=10))
-            y3 = np.random.randint(low=0, high=15, size=10)
-            x4 = np.sort(np.random.randint(low=0, high=15, size=10))
-            y4 = np.random.randint(low=0, high=15, size=10)
-            x5 = np.sort(np.random.randint(low=0, high=15, size=10))
-            y5 = np.random.randint(low=0, high=15, size=10)
-            x6 = np.sort(np.random.randint(low=0, high=15, size=10))
-            y6 = np.random.randint(low=0, high=15, size=10)
-            x7 = np.sort(np.random.randint(low=0, high=15, size=10))
-            y7 = np.random.randint(low=0, high=15, size=10)
-            x8 = np.sort(np.random.randint(low=0, high=15, size=10))
-            y8 = np.random.randint(low=0, high=15, size=10)
+            for _ in range(250):
+                liveampThread.y1.append(random.randint(1,20))
+                liveampThread.y2.append(random.randint(1,20))
+                liveampThread.y3.append(random.randint(1,20))
+                liveampThread.y4.append(random.randint(1,20))
+                liveampThread.y5.append(random.randint(1,20))
+                liveampThread.y6.append(random.randint(1,20))
+                liveampThread.y7.append(random.randint(1,20))
+                liveampThread.y8.append(random.randint(1,20))
+            
+            liveampThread.x1 = np.linspace(0,len(liveampThread.y1)-1,num= len(liveampThread.y1))     
+            liveampThread.x2 = np.linspace(0,len(liveampThread.y2)-1,num= len(liveampThread.y2))            
+            liveampThread.x3 = np.linspace(0,len(liveampThread.y3)-1,num= len(liveampThread.y3))
+            liveampThread.x4 = np.linspace(0,len(liveampThread.y4)-1,num= len(liveampThread.y4))
+            liveampThread.x5 = np.linspace(0,len(liveampThread.y5)-1,num= len(liveampThread.y5))     
+            liveampThread.x6 = np.linspace(0,len(liveampThread.y6)-1,num= len(liveampThread.y6))            
+            liveampThread.x7 = np.linspace(0,len(liveampThread.y7)-1,num= len(liveampThread.y7))
+            liveampThread.x8 = np.linspace(0,len(liveampThread.y8)-1,num= len(liveampThread.y8))
             # We share data with the main thread using the signal and the .emit() method.
             # Because the main thread is the only one able to plot things. Data can be
             # generated using threads, but any plotting or GUI stuff NEEDS to be done 
             # on the main thread.
-            self.update_EEG.emit(x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, y6, x7, y7, x8, y8)
+            self.update_EEG.emit(liveampThread.x1, liveampThread.y1, liveampThread.x2, liveampThread.y2, liveampThread.x3, 
+                                    liveampThread.y3, liveampThread.x4, liveampThread.y4, liveampThread.x5, liveampThread.y5, liveampThread.x6, 
+                                    liveampThread.y6, liveampThread.x7, liveampThread.y7, liveampThread.x8, liveampThread.y8)
             time.sleep(2)
 
 # # # # # GENERAL FUNCTIONS # # # # #
