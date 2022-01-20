@@ -74,7 +74,8 @@ class main_GUI(QMainWindow):
     def browseFiles(self):
         fileName = str(QFileDialog.getExistingDirectory(self, 'Select Directory (folder)'))
         self.files_lineEdit.setText(fileName)
-        self.downloads_path = fileName
+        global downloads_path
+        downloads_path = fileName
 
     def ImageUpdateSlot(self, Image):
         self.video.setPixmap(QPixmap.fromImage(Image))
