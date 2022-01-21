@@ -9,14 +9,12 @@ This repository contains all necessary files to create a Graphic User Interface 
 It is intended that with this application, anyone is able to perform the data acquisition in a practical and simple way.
 
 ## Features
----
 
 + Simple and modern interface.
 + Ready to support any E4, LiveAmp device, or camera.
 + Data storage cycle of 1 second.
 
 ## Technologies
----
 
 The application was designed using the following:
 
