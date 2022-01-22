@@ -1,3 +1,4 @@
+from statistics import mode
 import sys
 import os
 from PyQt5 import uic
@@ -24,6 +25,7 @@ downloads_path = ''
 start_datetime = ''
 video_fileName = ''
 emotions_fileName = ''
+eeg_fileName = ''
 
 # # # # # MAIN GUI CLASS DEFINITION # # # # #
 class main_GUI(QMainWindow):
@@ -70,6 +72,22 @@ class main_GUI(QMainWindow):
         self.eeg_graph_6 = self.eegConstructor.addPlot(row=1, col=1, title = "EEG Data")
         self.eeg_graph_7 = self.eegConstructor.addPlot(row=2, col=1, title = "EEG Data")
         self.eeg_graph_8 = self.eegConstructor.addPlot(row=3, col=1, title = "EEG Data")
+        self.eeg_graph_1.setDownsampling(mode='peak') # Checar si dejar estos junto con setClipToView
+        self.eeg_graph_2.setDownsampling(mode='peak')
+        self.eeg_graph_3.setDownsampling(mode='peak')
+        self.eeg_graph_4.setDownsampling(mode='peak')
+        self.eeg_graph_5.setDownsampling(mode='peak')
+        self.eeg_graph_6.setDownsampling(mode='peak')
+        self.eeg_graph_7.setDownsampling(mode='peak')
+        self.eeg_graph_8.setDownsampling(mode='peak')
+        self.eeg_graph_1.setClipToView(True)
+        self.eeg_graph_2.setClipToView(True)
+        self.eeg_graph_3.setClipToView(True)
+        self.eeg_graph_4.setClipToView(True)
+        self.eeg_graph_5.setClipToView(True)
+        self.eeg_graph_6.setClipToView(True)
+        self.eeg_graph_7.setClipToView(True)
+        self.eeg_graph_8.setClipToView(True)
 
     def browseFiles(self):
         fileName = str(QFileDialog.getExistingDirectory(self, 'Select Directory (folder)'))
@@ -84,9 +102,11 @@ class main_GUI(QMainWindow):
         global start_datetime
         global video_fileName
         global emotions_fileName
+        global eeg_fileName
         start_datetime = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
         video_fileName = os.path.join(downloads_path, (start_datetime + "_VI.mp4")) 
         emotions_fileName = os.path.join(downloads_path, (start_datetime + "_FE.csv"))
+        eeg_fileName = os.path.join(downloads_path, (start_datetime + "_EEG.csv"))
         createCSVs()
         if (self.empatica_checkBox.isChecked() and 
                 self.liveamp_checkBox.isChecked() and 
@@ -284,10 +304,14 @@ class empaticaThread(QThread):
     def run(self):
         self.ThreadActive = True
         while self.ThreadActive:
-            for _ in range(60):
+            for _ in range(64):
                 empaticaThread.y1.append(random.randint(1,20))
+
+            for _ in range(4):  
                 empaticaThread.y2.append(random.randint(1,20))
                 empaticaThread.y3.append(random.randint(1,20))
+
+            for _ in range(2):
                 empaticaThread.y4.append(random.randint(1,20))
             
             empaticaThread.x1 = np.linspace(0,len(empaticaThread.y1)-1,num= len(empaticaThread.y1))     
@@ -320,6 +344,7 @@ class liveampThread(QThread):
     y7 = []
     x8 = []
     y8 = []
+    first_call_passed = False
     # This creates a signal to be sent to the main thread (the GUI)
     update_EEG = pyqtSignal(np.ndarray, list, np.ndarray, list, np.ndarray, list, np.ndarray, list, np.ndarray, list, np.ndarray, list, np.ndarray, list, np.ndarray, list)
 
@@ -327,6 +352,13 @@ class liveampThread(QThread):
     def run(self):
         self.ThreadActive = True
         while self.ThreadActive:
+            
+            if liveampThread.first_call_passed is True:
+                pass # Aquí deberemos guardar la información cada minuto. Posiblemente, checar si es necesario hacerlo en otro Thread
+
+            if liveampThread.first_call_passed is False:
+                liveampThread.first_call_passed = True
+           
             for _ in range(250):
                 liveampThread.y1.append(random.randint(1,20))
                 liveampThread.y2.append(random.randint(1,20))
@@ -361,6 +393,12 @@ def createCSVs():
         with open(emotions_fileName, 'w', newline = '') as document:
             writer = csv.writer(document)
             writer.writerow(['Datetime', 'emotion'])
+        # Create EEG CSV file, which will be updated later.
+        with open(eeg_fileName, 'w', newline = '') as document:
+            writer = csv.writer(document)
+            writer.writerow(['Channel_1', 'Channel_2', 'Channel_3'
+                                'Channel_4', 'Channel_5', 'Channel_6'
+                                    'Channel_7', 'Channel_8'])
 
 # Method to save data in the end of the execution.
 def saveData():
@@ -374,7 +412,7 @@ def saveData():
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     GUI = main_GUI()
-    GUI.show()
+    GUI.show() 
     sys.exit(app.exec_())
 
 

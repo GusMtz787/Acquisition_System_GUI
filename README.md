@@ -20,4 +20,4 @@ The application was designed using the following:
 
 + Python programming language, version 3.8.10
 + PyQt, Qt's wrapper for Python applications.
-
++ Anaconda, for non-installer App building.
