@@ -333,8 +333,7 @@ class empaticaThread(QThread):
             # Because the main thread is the only one able to graph things. Data can be
             # generated using threads, but any plotting or GUI stuff NEEDS to be done 
             # on the main thread.
-            self.update_empatica.emit(x1, y1, x2, y2, 
-                                        x3, y3, x4, y4)
+            self.update_empatica.emit(x1, y1, x2, y2, x3, y3, x4, y4)
             time.sleep(2)
 
 # EEG data acquisition
@@ -362,7 +361,7 @@ class liveampThread(QThread):
             x7 = []
             y8 = []
             x8 = []
-           
+            
             for _ in range(250):
                 y1.append(random.randint(1,20))
                 y2.append(random.randint(1,20))
@@ -385,9 +384,8 @@ class liveampThread(QThread):
             # Because the main thread is the only one able to plot things. Data can be
             # generated using threads, but any plotting or GUI stuff NEEDS to be done 
             # on the main thread.
-            self.update_EEG.emit(x1, y1, x2, y2, x3, 
-                                    y3, x4, y4, x5, y5, x6, 
-                                    y6, x7, y7, x8, y8)
+            self.update_EEG.emit(x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, 
+                                y6, x7, y7, x8, y8)
             time.sleep(2)
 
 # # # # # GENERAL FUNCTIONS # # # # #
