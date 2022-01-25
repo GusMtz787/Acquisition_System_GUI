@@ -108,6 +108,9 @@ class main_GUI(QMainWindow):
         emotions_fileName = os.path.join(downloads_path, (start_datetime + "_FE.csv"))
         eeg_fileName = os.path.join(downloads_path, (start_datetime + "_EEG.csv"))
         createCSVs()
+        ### No olvides descomentar la de abajo antes del case porque se repite para todas ###
+        #self.updateControls()
+
         if (self.empatica_checkBox.isChecked() and 
                 self.liveamp_checkBox.isChecked() and 
                 self.camera_checkBox.isChecked()):
@@ -194,29 +197,32 @@ class main_GUI(QMainWindow):
         saveData()
     
     # This function updates the smartband graph once the system is activated.
-    def update_Empatica_Plot(self, x1, y1, x2, y2, x3, y3, x4, y4):
+    def update_Empatica_Plot(self, y1, y2, y3, y4):
+        x1 = np.linspace(0,len(y1)-1,num= len(y1))     
+        x2 = np.linspace(0,len(y2)-1,num= len(y2))            
+        x3 = np.linspace(0,len(y3)-1,num= len(y3))
+        x4 = np.linspace(0,len(y4)-1,num= len(y4))
 
-        if len(x1) >= 2240:
-            self.empatica_graph_1.clear()
-            self.empatica_graph_1.plot(x1, y1, pen=mkPen('y', width = 2))
-            self.empatica_graph_2.clear()
-            self.empatica_graph_2.plot(x2, y2, pen=mkPen('g', width = 2))
-            self.empatica_graph_3.clear()
-            self.empatica_graph_3.plot(x3, y3, pen=mkPen('b', width = 2))
-            self.empatica_graph_4.clear()
-            self.empatica_graph_4.plot(x4, y4, pen=mkPen('r', width = 2))
-        else:
-            self.empatica_graph_1.clear()
-            self.empatica_graph_1.plot(x1, y1, pen=mkPen('y', width = 2))
-            self.empatica_graph_2.clear()
-            self.empatica_graph_2.plot(x2, y2, pen=mkPen('g', width = 2))
-            self.empatica_graph_3.clear()
-            self.empatica_graph_3.plot(x3, y3, pen=mkPen('b', width = 2))
-            self.empatica_graph_4.clear()
-            self.empatica_graph_4.plot(x4, y4, pen=mkPen('r', width = 2))
+        self.empatica_graph_1.clear()
+        self.empatica_graph_1.plot(x1, y1, pen=mkPen('y', width = 2))
+        self.empatica_graph_2.clear()
+        self.empatica_graph_2.plot(x2, y2, pen=mkPen('g', width = 2))
+        self.empatica_graph_3.clear()
+        self.empatica_graph_3.plot(x3, y3, pen=mkPen('b', width = 2))
+        self.empatica_graph_4.clear()
+        self.empatica_graph_4.plot(x4, y4, pen=mkPen('r', width = 2))
 
     # This function updates the EEG cap graphs once the system is activated.
-    def update_EEG_plot(self, x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, y6, x7, y7, x8, y8):
+    def update_EEG_plot(self, y1, y2, y3, y4, y5, y6, y7, y8):
+        x1 = np.linspace(0,len(y1)-1,num= len(y1))     
+        x2 = np.linspace(0,len(y2)-1,num= len(y2))            
+        x3 = np.linspace(0,len(y3)-1,num= len(y3))
+        x4 = np.linspace(0,len(y4)-1,num= len(y4))
+        x5 = np.linspace(0,len(y5)-1,num= len(y5))     
+        x6 = np.linspace(0,len(y6)-1,num= len(y6))            
+        x7 = np.linspace(0,len(y7)-1,num= len(y7))
+        x8 = np.linspace(0,len(y8)-1,num= len(y8))
+
         self.eeg_graph_1.clear()
         self.eeg_graph_1.plot(x1, y1, pen=mkPen((169,50,38), width = 2))
         self.eeg_graph_2.clear()
@@ -241,6 +247,19 @@ class main_GUI(QMainWindow):
         self.popUp.setText("No device was selected")
         self.popUp.setIcon(QMessageBox.Warning)
         self.popUp.exec_()
+
+    # # DEVICES SELECTION FUNCTIONS # #
+    def camera_activate(self):
+        self.cameraThread.start()
+        self.cameraThread.ImageUpdate.connect(self.ImageUpdateSlot)
+
+    def eeg_activate(self):
+        self.liveampThread.start()
+        self.liveampThread.update_EEG.connect(self.update_EEG_plot)    
+    
+    def empatica_activate(self):
+        self.empaticaThread.start()
+        self.empaticaThread.update_empatica.connect(self.update_Empatica_Plot)
 
 # # # # # CLASSES FOR DEVICES' FUNCTIONING # # # # #
 # Camera thread
@@ -301,20 +320,16 @@ class cameraThread(QThread):
 # Empatica data acquisition
 class empaticaThread(QThread):
     # This creates a signal to be sent to the main thread (the GUI)
-    update_empatica = pyqtSignal(np.ndarray, list, np.ndarray, list, np.ndarray, list, np.ndarray, list)
+    update_empatica = pyqtSignal(list, list, list, list)
 
     # This is the method that is run automatically when the worker is started.
     def run(self):
         self.ThreadActive = True
         while self.ThreadActive:
             y1 = []
-            x1 = []
             y2 = []
-            x2 = []
             y3 = []
-            x3 = []
             y4 = []
-            x4 = []
             for _ in range(64):
                 y1.append(random.randint(1,20))
 
@@ -325,42 +340,30 @@ class empaticaThread(QThread):
             for _ in range(2):
                 y4.append(random.randint(1,20))
             
-            x1 = np.linspace(0,len(y1)-1,num= len(y1))     
-            x2 = np.linspace(0,len(y2)-1,num= len(y2))            
-            x3 = np.linspace(0,len(y3)-1,num= len(y3))
-            x4 = np.linspace(0,len(y4)-1,num= len(y4))
             # We share data with the main thread using the signal and the .emit() method.
             # Because the main thread is the only one able to graph things. Data can be
             # generated using threads, but any plotting or GUI stuff NEEDS to be done 
             # on the main thread.
-            self.update_empatica.emit(x1, y1, x2, y2, x3, y3, x4, y4)
+            self.update_empatica.emit(y1, y2, y3, y4)
             time.sleep(2)
 
 # EEG data acquisition
 class liveampThread(QThread):
     # This creates a signal to be sent to the main thread (the GUI)
-    update_EEG = pyqtSignal(np.ndarray, list, np.ndarray, list, np.ndarray, list, np.ndarray, list, np.ndarray, list, np.ndarray, list, np.ndarray, list, np.ndarray, list)
+    update_EEG = pyqtSignal(list, list, list, list, list, list, list, list)
 
     # This is the method that is run automatically when the worker is started.
     def run(self):
         self.ThreadActive = True
         while self.ThreadActive:
             y1 = []
-            x1 = []
             y2 = []
-            x2 = []
             y3 = []
-            x3 = []
             y4 = []
-            x4 = []
             y5 = []
-            x5 = []
             y6 = []
-            x6 = []
             y7 = []
-            x7 = []
             y8 = []
-            x8 = []
             
             for _ in range(250):
                 y1.append(random.randint(1,20))
@@ -372,20 +375,11 @@ class liveampThread(QThread):
                 y7.append(random.randint(1,20))
                 y8.append(random.randint(1,20))
             
-            x1 = np.linspace(0,len(y1)-1,num= len(y1))     
-            x2 = np.linspace(0,len(y2)-1,num= len(y2))            
-            x3 = np.linspace(0,len(y3)-1,num= len(y3))
-            x4 = np.linspace(0,len(y4)-1,num= len(y4))
-            x5 = np.linspace(0,len(y5)-1,num= len(y5))     
-            x6 = np.linspace(0,len(y6)-1,num= len(y6))            
-            x7 = np.linspace(0,len(y7)-1,num= len(y7))
-            x8 = np.linspace(0,len(y8)-1,num= len(y8))
             # We share data with the main thread using the signal and the .emit() method.
             # Because the main thread is the only one able to plot things. Data can be
             # generated using threads, but any plotting or GUI stuff NEEDS to be done 
             # on the main thread.
-            self.update_EEG.emit(x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, 
-                                y6, x7, y7, x8, y8)
+            self.update_EEG.emit(y1, y2, y3, y4, y5, y6, y7, y8)
             time.sleep(2)
 
 # # # # # GENERAL FUNCTIONS # # # # #
@@ -426,3 +420,28 @@ if __name__ == '__main__':
 
 # Qt Design Ideas:
 # https://www.youtube.com/watch?v=20ed0Ytkxuw
+
+#%%
+
+# def hello():
+#     print('Jalo')
+
+# def go():
+#     print('Yo también jalo')
+
+# cases = { 
+#     (True,  True,  True): [self.camera_activate(), self.eeg_activate(), self.empatica_activate()],
+#     (True,  True,  False): [self.camera_activate(), self.eeg_activate()],
+#     (True,  False,  True): [self.camera_activate(), self.empatica_activate()],
+#     (True,  False,  False): [self.camera_activate()],
+#     (False,  True, True): [self.eeg_activate(), self.empatica_activate()],
+#     (False,  True, False): [self.eeg_activate()],
+#     (False,  False, True): [self.empatica_activate()],
+#     (False,  False, False): [self.noDeviceSelected_popUp()],
+#     }
+
+# x=True
+# y=True
+# z=True
+
+# cases[x,y,z]
