@@ -197,6 +197,14 @@ class main_GUI(QMainWindow):
         self.eeg_graph_8.clear()
         self.eeg_graph_8.plot(x8, y8, pen=mkPen((125,60,152), width = 2))
 
+    def update_EEG_csv(self, y1, y2, y3, y4, y5, y6, y7, y8):
+        # with open(eeg_fileName, 'a', newline = '') as document:
+        #     writer = csv.writer(document)
+        # El link de abajo es para crear DataFrames con arreglos que tengan
+        # diferente tamaño. Falta aplicarlo.
+        # https://stackoverflow.com/questions/49891200/generate-a-dataframe-from-list-with-different-length
+        pass
+
     # Pop-up message when no device is selected.
     def noDeviceSelected_popUp(self):
         self.popUp = QMessageBox()
@@ -212,7 +220,8 @@ class main_GUI(QMainWindow):
 
     def eeg_activate(self):
         self.liveampThread.start()
-        self.liveampThread.update_EEG.connect(self.update_EEG_plot)    
+        self.liveampThread.update_EEG.connect(self.update_EEG_plot)
+        self.liveampThread.update_EEG.connect(self.update_EEG_csv)    
     
     def empatica_activate(self):
         self.empaticaThread.start()
