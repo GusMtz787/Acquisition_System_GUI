@@ -108,63 +108,20 @@ class main_GUI(QMainWindow):
         emotions_fileName = os.path.join(downloads_path, (start_datetime + "_FE.csv"))
         eeg_fileName = os.path.join(downloads_path, (start_datetime + "_EEG.csv"))
         createCSVs()
-        ### No olvides descomentar la de abajo antes del case porque se repite para todas ###
-        #self.updateControls()
-
-        if (self.empatica_checkBox.isChecked() and 
-                self.liveamp_checkBox.isChecked() and 
-                self.camera_checkBox.isChecked()):
-            self.updateControls()
-            self.cameraThread.start()
-            self.cameraThread.ImageUpdate.connect(self.ImageUpdateSlot)
-            self.empaticaThread.start()
-            self.empaticaThread.update_empatica.connect(self.update_Empatica_Plot)
-            self.liveampThread.start()
-            self.liveampThread.update_EEG.connect(self.update_EEG_plot)
-        elif (self.empatica_checkBox.isChecked() and 
-                self.liveamp_checkBox.isChecked() and 
-                not(self.camera_checkBox.isChecked())):
-            self.updateControls()
-            self.empaticaThread.start()
-            self.empaticaThread.update_empatica.connect(self.update_Empatica_Plot)
-            self.liveampThread.start()
-            self.liveampThread.update_EEG.connect(self.update_EEG_plot)
-        elif (not(self.empatica_checkBox.isChecked()) and 
-                self.liveamp_checkBox.isChecked() and 
-                self.camera_checkBox.isChecked()):
-            self.updateControls()
-            self.cameraThread.start()
-            self.cameraThread.ImageUpdate.connect(self.ImageUpdateSlot)
-            self.liveampThread.start()
-            self.liveampThread.update_EEG.connect(self.update_EEG_plot)
-        elif (self.empatica_checkBox.isChecked() and 
-                not(self.liveamp_checkBox.isChecked()) and 
-                self.camera_checkBox.isChecked()):
-            self.updateControls()
-            self.cameraThread.start()
-            self.cameraThread.ImageUpdate.connect(self.ImageUpdateSlot)
-            self.empaticaThread.start()
-            self.empaticaThread.update_empatica.connect(self.update_Empatica_Plot)
-        elif (self.empatica_checkBox.isChecked() and 
-                not(self.liveamp_checkBox.isChecked()) and 
-                not(self.camera_checkBox.isChecked())):
-            self.updateControls()
-            self.empaticaThread.start()
-            self.empaticaThread.update_empatica.connect(self.update_Empatica_Plot)
-        elif (not(self.empatica_checkBox.isChecked()) and 
-                self.liveamp_checkBox.isChecked() and 
-                not(self.camera_checkBox.isChecked())):
-            self.updateControls()
-            self.liveampThread.start()
-            self.liveampThread.update_EEG.connect(self.update_EEG_plot)
-        elif (not(self.empatica_checkBox.isChecked()) and 
-                not(self.liveamp_checkBox.isChecked()) and 
-                self.camera_checkBox.isChecked()):
-            self.updateControls()
-            self.cameraThread.start()
-            self.cameraThread.ImageUpdate.connect(self.ImageUpdateSlot)
-        else:
-            self.noDeviceSelected_popUp()
+        self.updateControls()
+        # This is a dictionary that will check using the run_functions() which checkboxes are checked, and then it runs
+        # the functions according to the selection.
+        cases = {
+            (True,  True,  True): [self.camera_activate, self.eeg_activate, self.empatica_activate],
+            (True,  True,  False): [self.camera_activate, self.eeg_activate],
+            (True,  False,  True): [self.camera_activate, self.empatica_activate],
+            (True,  False,  False): [self.camera_activate],
+            (False,  True, True): [self.eeg_activate, self.empatica_activate],
+            (False,  True, False): [self.eeg_activate],
+            (False,  False, True): [self.empatica_activate],
+            (False,  False, False): [self.noDeviceSelected_popUp]
+            }
+        self.run_functions(cases[self.camera_checkBox.isChecked(), self.liveamp_checkBox.isChecked(), self.empatica_checkBox.isChecked()])
 
     # Function to disable functions once the system is activated.     
     def updateControls(self): 
@@ -240,7 +197,7 @@ class main_GUI(QMainWindow):
         self.eeg_graph_8.clear()
         self.eeg_graph_8.plot(x8, y8, pen=mkPen((125,60,152), width = 2))
 
-    # Pop-up message for one no device is selected.
+    # Pop-up message when no device is selected.
     def noDeviceSelected_popUp(self):
         self.popUp = QMessageBox()
         self.popUp.setWindowTitle("Warning")
@@ -260,6 +217,10 @@ class main_GUI(QMainWindow):
     def empatica_activate(self):
         self.empaticaThread.start()
         self.empaticaThread.update_empatica.connect(self.update_Empatica_Plot)
+
+    def run_functions(self, func_list):
+        for function in func_list:
+            function()
 
 # # # # # CLASSES FOR DEVICES' FUNCTIONING # # # # #
 # Camera thread
@@ -311,6 +272,7 @@ class cameraThread(QThread):
                     cameraThread.date_emotion = (datetime.now().isoformat(), result['dominant_emotion'])
                     cameraThread.emotions_array.append(cameraThread.date_emotion)
                 cameraThread.frames_counter += 1
+                
                 # We will store all emotions in a file every minute. This is a fail-safe measure.
                 if (cameraThread.frames_counter % 1200 == 0):
                     with open(emotions_fileName, 'a', newline = '') as document:
@@ -332,11 +294,9 @@ class empaticaThread(QThread):
             y4 = []
             for _ in range(64):
                 y1.append(random.randint(1,20))
-
             for _ in range(4):  
                 y2.append(random.randint(1,20))
                 y3.append(random.randint(1,20))
-
             for _ in range(2):
                 y4.append(random.randint(1,20))
             
@@ -423,11 +383,11 @@ if __name__ == '__main__':
 
 #%%
 
-# def hello():
-#     print('Jalo')
+def hello():
+    print('Jalo')
 
-# def go():
-#     print('Yo también jalo')
+def go():
+    print('Yo también jalo')
 
 # cases = { 
 #     (True,  True,  True): [self.camera_activate(), self.eeg_activate(), self.empatica_activate()],
@@ -440,8 +400,23 @@ if __name__ == '__main__':
 #     (False,  False, False): [self.noDeviceSelected_popUp()],
 #     }
 
-# x=True
-# y=True
-# z=True
+cases = { 
+    (True,  True,  True): [hello, go],
+    (True,  False,  True): 'Hi',
+    (True,  True,  False): 'Hi',
+    (True,  False,  False): 'Hi',
+    (False,  True, True): 'Hi',
+    (False,  True, False): 'Hi',
+    (False,  False, True): 'Hi',
+    (False,  False, False): 'Hi',
+    }
 
-# cases[x,y,z]
+x=True
+y=True
+z=True
+
+def fire_all(func_list):
+    for f in func_list:
+        f()
+
+fire_all(cases[x,y,z])
