@@ -1,6 +1,6 @@
 # Acquisition System App for BRAIN - MCE project
 
-This repository contains all necessary files to create a Graphic User Interface (GUI), which contains all the necessary methods to acquire data from the devices used in this proyect, these are listed below:
+This repository contains all files to create a Graphic User Interface (GUI), which contains all the necessary methods to acquire data from the devices used in this proyect, these are listed below:
 
 + Empatica E4
 + LiveAmp EEG cap

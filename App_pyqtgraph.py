@@ -121,6 +121,8 @@ class main_GUI(QMainWindow):
             (False,  False, True): [self.empatica_activate],
             (False,  False, False): [self.noDeviceSelected_popUp]
             }
+        # The function receives as parameter a list containing the devices' functions according to the checkboxes from the
+        # dictionary. 
         self.run_functions(cases[self.camera_checkBox.isChecked(), self.liveamp_checkBox.isChecked(), self.empatica_checkBox.isChecked()])
 
     # Function to disable functions once the system is activated.     
