@@ -303,10 +303,10 @@ class empaticaThread(QThread):
             y2 = []
             y3 = []
             y4 = []
-            for _ in range(64):
-                y1.append(random.randint(1,20))
             for _ in range(4):  
+                y1.append(random.randint(1,20))
                 y2.append(random.randint(1,20))
+            for _ in range(64):
                 y3.append(random.randint(1,20))
             for _ in range(2):
                 y4.append(random.randint(1,20))
