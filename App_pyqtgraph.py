@@ -12,6 +12,7 @@ import csv
 import numpy as np
 import pyqtgraph as pg
 from pathlib import Path
+import pandas as pd
 
 import random
 import time
@@ -22,7 +23,6 @@ pg.setConfigOption('background', (255,255,255,0))
 pg.setConfigOption('foreground', (0,0,0))
 
 downloads_path = ''
-start_datetime = ''
 video_fileName = ''
 emotions_fileName = ''
 eeg_fileName = ''
@@ -99,14 +99,15 @@ class main_GUI(QMainWindow):
         self.video.setPixmap(QPixmap.fromImage(Image))
 
     def activate(self):
-        global start_datetime
-        global video_fileName
-        global emotions_fileName
-        global eeg_fileName
         start_datetime = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
+        global video_fileName
         video_fileName = os.path.join(downloads_path, (start_datetime + "_VI.mp4")) 
+        global emotions_fileName
         emotions_fileName = os.path.join(downloads_path, (start_datetime + "_FE.csv"))
+        global eeg_fileName
         eeg_fileName = os.path.join(downloads_path, (start_datetime + "_EEG.csv"))
+        global empatica_fileName
+        empatica_fileName = os.path.join(downloads_path, (start_datetime + "_EM.csv"))
         createCSVs()
         self.updateControls()
         # This is a dictionary that will check using the run_functions() which checkboxes are checked, and then it runs
@@ -170,6 +171,15 @@ class main_GUI(QMainWindow):
         self.empatica_graph_3.plot(x3, y3, pen=mkPen('b', width = 2))
         self.empatica_graph_4.clear()
         self.empatica_graph_4.plot(x4, y4, pen=mkPen('r', width = 2))
+    
+    # This function will store the values in the EEG csv.
+    def update_Empatica_csv(self, y1, y2, y3, y4):
+        data = pd.DataFrame({'ch1': pd.Series(y1),
+                             'ch2': pd.Series(y2),
+                             'ch3': pd.Series(y3),
+                             'ch4': pd.Series(y4)})
+        # Use header as false to avoid printing the columns' header each time. 
+        data.to_csv(empatica_fileName, mode = 'a', header = False)
 
     # This function updates the EEG cap graphs once the system is activated.
     def update_EEG_plot(self, y1, y2, y3, y4, y5, y6, y7, y8):
@@ -199,13 +209,18 @@ class main_GUI(QMainWindow):
         self.eeg_graph_8.clear()
         self.eeg_graph_8.plot(x8, y8, pen=mkPen((125,60,152), width = 2))
 
+    # This function will store the values in the EEG csv.
     def update_EEG_csv(self, y1, y2, y3, y4, y5, y6, y7, y8):
-        # with open(eeg_fileName, 'a', newline = '') as document:
-        #     writer = csv.writer(document)
-        # El link de abajo es para crear DataFrames con arreglos que tengan
-        # diferente tamaño. Falta aplicarlo.
-        # https://stackoverflow.com/questions/49891200/generate-a-dataframe-from-list-with-different-length
-        pass
+        data = pd.DataFrame({'ch1': pd.Series(y1),
+                             'ch2': pd.Series(y2),
+                             'ch3': pd.Series(y3),
+                             'ch4': pd.Series(y4),
+                             'ch5': pd.Series(y5),
+                             'ch6': pd.Series(y6),
+                             'ch7': pd.Series(y7),
+                             'ch8': pd.Series(y8)})
+        # Use header as false to avoid printing the columns' header each time. 
+        data.to_csv(eeg_fileName, mode = 'a', header = False)
 
     # Pop-up message when no device is selected.
     def noDeviceSelected_popUp(self):
@@ -228,6 +243,7 @@ class main_GUI(QMainWindow):
     def empatica_activate(self):
         self.empaticaThread.start()
         self.empaticaThread.update_empatica.connect(self.update_Empatica_Plot)
+        self.empaticaThread.update_empatica.connect(self.update_Empatica_csv)
 
     def run_functions(self, func_list):
         for function in func_list:
@@ -320,7 +336,9 @@ class empaticaThread(QThread):
 
 # EEG data acquisition
 class liveampThread(QThread):
-    # This creates a signal to be sent to the main thread (the GUI)
+    # This creates a signal to be sent to the main thread (the GUI). And since its original
+    # declaration, when update_EEG is called, the values are sent to two functions:
+    # update_EEG_plot() and update_EEG_plot(). 
     update_EEG = pyqtSignal(list, list, list, list, list, list, list, list)
 
     # This is the method that is run automatically when the worker is started.
@@ -362,6 +380,12 @@ def createCSVs():
             writer.writerow(['Datetime', 'emotion'])
         # Create EEG CSV file, which will be updated later.
         with open(eeg_fileName, 'w', newline = '') as document:
+            writer = csv.writer(document)
+            writer.writerow(['ch1', 'ch2', 'ch3',
+                                'ch4', 'ch5', 'ch6',
+                                    'ch7', 'ch8'])
+        # Create Empatica CSV file, which will be updated later.
+        with open(empatica_fileName, 'w', newline = '') as document:
             writer = csv.writer(document)
             writer.writerow(['Channel_1', 'Channel_2', 'Channel_3'
                                 'Channel_4', 'Channel_5', 'Channel_6'
