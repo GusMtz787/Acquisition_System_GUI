@@ -1,6 +1,5 @@
 from statistics import mode
 import sys
-import os
 from PyQt5 import uic
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -18,6 +17,8 @@ import time
 
 from pyqtgraph.functions import mkColor, mkPen
 
+import _ButtonFunctions as Bf
+
 pg.setConfigOption('background', (255,255,255,0))
 pg.setConfigOption('foreground', (0,0,0))
 
@@ -29,7 +30,7 @@ eeg_fileName = ''
 
 # # # # # MAIN GUI CLASS DEFINITION # # # # #
 class main_GUI(QMainWindow):
-    
+
     def __init__(self):
         super().__init__()
         uic.loadUi(r"C:\Users\goliv\Documents\BRAIN\MCE\Acquisition_System\GUI_Qt.ui", self)
@@ -58,12 +59,12 @@ class main_GUI(QMainWindow):
         # Build layouts, these are then used to graph
         self.empaticaConstructor = pg.GraphicsLayoutWidget()
         self.eegConstructor = pg.GraphicsLayoutWidget()
-        self.empatica_graph.addWidget(self.empaticaConstructor) 
+        self.empatica_graph.addWidget(self.empaticaConstructor)
         self.empatica_graph_1 = self.empaticaConstructor.addPlot(row=0, col=0, title = "Temperature")
         self.empatica_graph_2 = self.empaticaConstructor.addPlot(row=1, col=0, title = "Electrodermal Activity")
         self.empatica_graph_3 = self.empaticaConstructor.addPlot(row=2, col=0, title = "Blood Volume Pulse")
         self.empatica_graph_4 = self.empaticaConstructor.addPlot(row=3, col=0, title = "Interbeat Interval")
-        self.eeg_graph.addWidget(self.eegConstructor) 
+        self.eeg_graph.addWidget(self.eegConstructor)
         self.eeg_graph_1 = self.eegConstructor.addPlot(row=0, col=0, title = "EEG Data")
         self.eeg_graph_2 = self.eegConstructor.addPlot(row=1, col=0, title = "EEG Data")
         self.eeg_graph_3 = self.eegConstructor.addPlot(row=2, col=0, title = "EEG Data")
@@ -90,43 +91,44 @@ class main_GUI(QMainWindow):
         self.eeg_graph_8.setClipToView(True)
 
     def browseFiles(self):
-        fileName = str(QFileDialog.getExistingDirectory(self, 'Select Directory (folder)'))
-        self.files_lineEdit.setText(fileName)
-        global downloads_path
-        downloads_path = fileName
+        Bf.browseFiles(self)
 
     def ImageUpdateSlot(self, Image):
         self.video.setPixmap(QPixmap.fromImage(Image))
 
     def activate(self):
-        global start_datetime
-        global video_fileName
-        global emotions_fileName
-        global eeg_fileName
-        start_datetime = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
-        video_fileName = os.path.join(downloads_path, (start_datetime + "_VI.mp4")) 
-        emotions_fileName = os.path.join(downloads_path, (start_datetime + "_FE.csv"))
-        eeg_fileName = os.path.join(downloads_path, (start_datetime + "_EEG.csv"))
-        createCSVs()
-        self.updateControls()
-        # This is a dictionary that will check using the run_functions() which checkboxes are checked, and then it runs
-        # the functions according to the selection.
-        cases = {
-            (True,  True,  True): [self.camera_activate, self.eeg_activate, self.empatica_activate],
-            (True,  True,  False): [self.camera_activate, self.eeg_activate],
-            (True,  False,  True): [self.camera_activate, self.empatica_activate],
-            (True,  False,  False): [self.camera_activate],
-            (False,  True, True): [self.eeg_activate, self.empatica_activate],
-            (False,  True, False): [self.eeg_activate],
-            (False,  False, True): [self.empatica_activate],
-            (False,  False, False): [self.noDeviceSelected_popUp]
-            }
-        # The function receives as parameter a list containing the devices' functions according to the checkboxes from the
-        # dictionary. 
-        self.run_functions(cases[self.camera_checkBox.isChecked(), self.liveamp_checkBox.isChecked(), self.empatica_checkBox.isChecked()])
+        global downloads_path
+        Bf.activate(self, downloads_path)
 
-    # Function to disable functions once the system is activated.     
-    def updateControls(self): 
+    # def activate(self):
+    #     global start_datetime
+    #     global video_fileName
+    #     global emotions_fileName
+    #     global eeg_fileName
+    #     start_datetime = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
+    #     video_fileName = os.path.join(downloads_path, (start_datetime + "_VI.mp4"))
+    #     emotions_fileName = os.path.join(downloads_path, (start_datetime + "_FE.csv"))
+    #     eeg_fileName = os.path.join(downloads_path, (start_datetime + "_EEG.csv"))
+    #     createCSVs()
+    #     self.updateControls()
+    #     # This is a dictionary that will check using the run_functions() which checkboxes are checked, and then it runs
+    #     # the functions according to the selection.
+    #     cases = {
+    #         (True,  True,  True): [self.camera_activate, self.eeg_activate, self.empatica_activate],
+    #         (True,  True,  False): [self.camera_activate, self.eeg_activate],
+    #         (True,  False,  True): [self.camera_activate, self.empatica_activate],
+    #         (True,  False,  False): [self.camera_activate],
+    #         (False,  True, True): [self.eeg_activate, self.empatica_activate],
+    #         (False,  True, False): [self.eeg_activate],
+    #         (False,  False, True): [self.empatica_activate],
+    #         (False,  False, False): [self.noDeviceSelected_popUp]
+    #         }
+    #     # The function receives as parameter a list containing the devices' functions according to the checkboxes from the
+    #     # dictionary.
+    #     self.run_functions(cases[self.camera_checkBox.isChecked(), self.liveamp_checkBox.isChecked(), self.empatica_checkBox.isChecked()])
+
+    # Function to disable functions once the system is activated.
+    def updateControls(self):
         self.btn_deactivate.setEnabled(True)
         self.btn_activate.setEnabled(False)
         self.btn_files.setEnabled(False)
@@ -137,7 +139,7 @@ class main_GUI(QMainWindow):
         self.idE4_lineEdit.setEnabled(False)
         self.state.setText("Running...")
         self.state.setStyleSheet("color: green;")
-    
+
     # Function to deactivate system.
     def deactivate(self):
         self.btn_deactivate.setEnabled(False)
@@ -154,11 +156,11 @@ class main_GUI(QMainWindow):
         self.empaticaThread.terminate()
         self.liveampThread.terminate()
         saveData()
-    
+
     # This function updates the smartband graph once the system is activated.
     def update_Empatica_Plot(self, y1, y2, y3, y4):
-        x1 = np.linspace(0,len(y1)-1,num= len(y1))     
-        x2 = np.linspace(0,len(y2)-1,num= len(y2))            
+        x1 = np.linspace(0,len(y1)-1,num= len(y1))
+        x2 = np.linspace(0,len(y2)-1,num= len(y2))
         x3 = np.linspace(0,len(y3)-1,num= len(y3))
         x4 = np.linspace(0,len(y4)-1,num= len(y4))
 
@@ -173,12 +175,12 @@ class main_GUI(QMainWindow):
 
     # This function updates the EEG cap graphs once the system is activated.
     def update_EEG_plot(self, y1, y2, y3, y4, y5, y6, y7, y8):
-        x1 = np.linspace(0,len(y1)-1,num= len(y1))     
-        x2 = np.linspace(0,len(y2)-1,num= len(y2))            
+        x1 = np.linspace(0,len(y1)-1,num= len(y1))
+        x2 = np.linspace(0,len(y2)-1,num= len(y2))
         x3 = np.linspace(0,len(y3)-1,num= len(y3))
         x4 = np.linspace(0,len(y4)-1,num= len(y4))
-        x5 = np.linspace(0,len(y5)-1,num= len(y5))     
-        x6 = np.linspace(0,len(y6)-1,num= len(y6))            
+        x5 = np.linspace(0,len(y5)-1,num= len(y5))
+        x6 = np.linspace(0,len(y6)-1,num= len(y6))
         x7 = np.linspace(0,len(y7)-1,num= len(y7))
         x8 = np.linspace(0,len(y8)-1,num= len(y8))
 
@@ -223,8 +225,8 @@ class main_GUI(QMainWindow):
     def eeg_activate(self):
         self.liveampThread.start()
         self.liveampThread.update_EEG.connect(self.update_EEG_plot)
-        self.liveampThread.update_EEG.connect(self.update_EEG_csv)    
-    
+        self.liveampThread.update_EEG.connect(self.update_EEG_csv)
+
     def empatica_activate(self):
         self.empaticaThread.start()
         self.empaticaThread.update_empatica.connect(self.update_Empatica_Plot)
@@ -271,7 +273,7 @@ class cameraThread(QThread):
                     # Here the back end analyzes the image and tries to find an emotion
                     try:
                         result = DeepFace.analyze(frame, actions = ['emotion'], enforce_detection = True, detector_backend = 'dlib')
-                    
+
                     # In case no emotion is detected, the .analyze() method will throw a ValueError exception.
                     # If we catch it we know there may be no person to be analyzed or the face is not clear
                     # Therefore we attach a 'ND' (Not Detected) value to the emotions array.
@@ -283,7 +285,7 @@ class cameraThread(QThread):
                     cameraThread.date_emotion = (datetime.now().isoformat(), result['dominant_emotion'])
                     cameraThread.emotions_array.append(cameraThread.date_emotion)
                 cameraThread.frames_counter += 1
-                
+
                 # We will store all emotions in a file every minute. This is a fail-safe measure.
                 if (cameraThread.frames_counter % 1200 == 0):
                     with open(emotions_fileName, 'a', newline = '') as document:
@@ -303,17 +305,17 @@ class empaticaThread(QThread):
             y2 = []
             y3 = []
             y4 = []
-            for _ in range(4):  
+            for _ in range(4):
                 y1.append(random.randint(1,20))
                 y2.append(random.randint(1,20))
             for _ in range(64):
                 y3.append(random.randint(1,20))
             for _ in range(2):
                 y4.append(random.randint(1,20))
-            
+
             # We share data with the main thread using the signal and the .emit() method.
             # Because the main thread is the only one able to graph things. Data can be
-            # generated using threads, but any plotting or GUI stuff NEEDS to be done 
+            # generated using threads, but any plotting or GUI stuff NEEDS to be done
             # on the main thread.
             self.update_empatica.emit(y1, y2, y3, y4)
             time.sleep(2)
@@ -335,7 +337,7 @@ class liveampThread(QThread):
             y6 = []
             y7 = []
             y8 = []
-            
+
             for _ in range(250):
                 y1.append(random.randint(1,20))
                 y2.append(random.randint(1,20))
@@ -345,27 +347,27 @@ class liveampThread(QThread):
                 y6.append(random.randint(1,20))
                 y7.append(random.randint(1,20))
                 y8.append(random.randint(1,20))
-            
+
             # We share data with the main thread using the signal and the .emit() method.
             # Because the main thread is the only one able to plot things. Data can be
-            # generated using threads, but any plotting or GUI stuff NEEDS to be done 
+            # generated using threads, but any plotting or GUI stuff NEEDS to be done
             # on the main thread.
             self.update_EEG.emit(y1, y2, y3, y4, y5, y6, y7, y8)
             time.sleep(2)
 
 # # # # # GENERAL FUNCTIONS # # # # #
 # Create CSV files where all data will be stored continuosly.
-def createCSVs():
-        # Create emotions CSV file, which will be updated later.
-        with open(emotions_fileName, 'w', newline = '') as document:
-            writer = csv.writer(document)
-            writer.writerow(['Datetime', 'emotion'])
-        # Create EEG CSV file, which will be updated later.
-        with open(eeg_fileName, 'w', newline = '') as document:
-            writer = csv.writer(document)
-            writer.writerow(['Channel_1', 'Channel_2', 'Channel_3'
-                                'Channel_4', 'Channel_5', 'Channel_6'
-                                    'Channel_7', 'Channel_8'])
+# def createCSVs():
+#         # Create emotions CSV file, which will be updated later.
+#         with open(emotions_fileName, 'w', newline = '') as document:
+#             writer = csv.writer(document)
+#             writer.writerow(['Datetime', 'emotion'])
+#         # Create EEG CSV file, which will be updated later.
+#         with open(eeg_fileName, 'w', newline = '') as document:
+#             writer = csv.writer(document)
+#             writer.writerow(['Channel_1', 'Channel_2', 'Channel_3'
+#                                 'Channel_4', 'Channel_5', 'Channel_6'
+#                                     'Channel_7', 'Channel_8'])
 
 # Method to save data in the end of the execution.
 def saveData():
@@ -379,7 +381,7 @@ def saveData():
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     GUI = main_GUI()
-    GUI.show() 
+    GUI.show()
     sys.exit(app.exec_())
 
 
@@ -400,7 +402,7 @@ def hello():
 def go():
     print('Yo también jalo')
 
-# cases = { 
+# cases = {
 #     (True,  True,  True): [self.camera_activate(), self.eeg_activate(), self.empatica_activate()],
 #     (True,  True,  False): [self.camera_activate(), self.eeg_activate()],
 #     (True,  False,  True): [self.camera_activate(), self.empatica_activate()],
@@ -411,7 +413,7 @@ def go():
 #     (False,  False, False): [self.noDeviceSelected_popUp()],
 #     }
 
-cases = { 
+cases = {
     (True,  True,  True): [hello, go],
     (True,  False,  True): 'Hi',
     (True,  True,  False): 'Hi',
