@@ -108,7 +108,6 @@ class main_GUI(QMainWindow):
         eeg_fileName = os.path.join(downloads_path, (start_datetime + "_EEG.csv"))
         global empatica_fileName
         empatica_fileName = os.path.join(downloads_path, (start_datetime + "_EM.csv"))
-        createCSVs()
         self.updateControls()
         # This is a dictionary that will check using the run_functions() which checkboxes are checked, and then it runs
         # the functions according to the selection.
@@ -149,12 +148,17 @@ class main_GUI(QMainWindow):
         self.camera_checkBox.setEnabled(True)
         self.camera_lineEdit.setEnabled(True)
         self.idE4_lineEdit.setEnabled(True)
+        if (self.camera_checkBox.isChecked()):
+            self.cameraThread.terminate()
+            cameraThread.cap.release()
+            cameraThread.out.release()
+        if (self.empatica_checkBox.isChecked()):
+            self.empaticaThread.terminate()
+        if (self.liveamp_checkBox.isChecked()):
+            self.liveampThread.terminate()
         self.state.setText("Waiting to start")
         self.state.setStyleSheet("color: rgb(0, 133, 199);")
-        self.cameraThread.terminate()
-        self.empaticaThread.terminate()
-        self.liveampThread.terminate()
-        saveData()
+        #saveData()
     
     # This function updates the smartband graph once the system is activated.
     def update_Empatica_Plot(self, y1, y2, y3, y4):
@@ -234,16 +238,30 @@ class main_GUI(QMainWindow):
     def camera_activate(self):
         self.cameraThread.start()
         self.cameraThread.ImageUpdate.connect(self.ImageUpdateSlot)
+        # Create emotions CSV file, which will be updated later.
+        with open(emotions_fileName, 'w', newline = '') as document:
+            writer = csv.writer(document)
+            writer.writerow(['Datetime', 'emotion'])
 
     def eeg_activate(self):
         self.liveampThread.start()
         self.liveampThread.update_EEG.connect(self.update_EEG_plot)
         self.liveampThread.update_EEG.connect(self.update_EEG_csv)    
+        # Create EEG CSV file, which will be updated later.
+        with open(eeg_fileName, 'w', newline = '') as document:
+            writer = csv.writer(document)
+            writer.writerow(['ch1', 'ch2', 'ch3',
+                             'ch4', 'ch5', 'ch6',
+                             'ch7', 'ch8'])
     
     def empatica_activate(self):
         self.empaticaThread.start()
         self.empaticaThread.update_empatica.connect(self.update_Empatica_Plot)
         self.empaticaThread.update_empatica.connect(self.update_Empatica_csv)
+        # Create Empatica CSV file, which will be updated later.
+        with open(empatica_fileName, 'w', newline = '') as document:
+            writer = csv.writer(document)
+            writer.writerow(['Temperature', 'EDA', 'BVP', ' IBI'])
 
     def run_functions(self, func_list):
         for function in func_list:
@@ -372,29 +390,9 @@ class liveampThread(QThread):
             time.sleep(2)
 
 # # # # # GENERAL FUNCTIONS # # # # #
-# Create CSV files where all data will be stored continuosly.
-def createCSVs():
-        # Create emotions CSV file, which will be updated later.
-        with open(emotions_fileName, 'w', newline = '') as document:
-            writer = csv.writer(document)
-            writer.writerow(['Datetime', 'emotion'])
-        # Create EEG CSV file, which will be updated later.
-        with open(eeg_fileName, 'w', newline = '') as document:
-            writer = csv.writer(document)
-            writer.writerow(['ch1', 'ch2', 'ch3',
-                                'ch4', 'ch5', 'ch6',
-                                    'ch7', 'ch8'])
-        # Create Empatica CSV file, which will be updated later.
-        with open(empatica_fileName, 'w', newline = '') as document:
-            writer = csv.writer(document)
-            writer.writerow(['Channel_1', 'Channel_2', 'Channel_3'
-                                'Channel_4', 'Channel_5', 'Channel_6'
-                                    'Channel_7', 'Channel_8'])
 
 # Method to save data in the end of the execution.
 def saveData():
-    cameraThread.cap.release()
-    cameraThread.out.release()
     with open(emotions_fileName, 'a', newline = '') as document:
         writer = csv.writer(document)
         writer.writerows(cameraThread.emotions_array)
