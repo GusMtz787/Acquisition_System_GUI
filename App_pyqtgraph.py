@@ -7,13 +7,13 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import cv2
 from deepface import DeepFace
-from datetime import datetime
+from datetime import datetime, timedelta
 import csv
 import numpy as np
 import pyqtgraph as pg
 from pathlib import Path
 import pandas as pd
-
+import pylsl
 import random
 import time
 
@@ -63,6 +63,10 @@ class main_GUI(QMainWindow):
         self.empatica_graph_2 = self.empaticaConstructor.addPlot(row=1, col=0, title = "Electrodermal Activity")
         self.empatica_graph_3 = self.empaticaConstructor.addPlot(row=2, col=0, title = "Blood Volume Pulse")
         self.empatica_graph_4 = self.empaticaConstructor.addPlot(row=3, col=0, title = "Interbeat Interval")
+        self.empatica_graph_1.setLabel(axis='left', text='Celsius [°C]')
+        self.empatica_graph_2.setLabel(axis='left', text='Microsiemens [µS]')
+        self.empatica_graph_3.setLabel(axis='left', text='Nano Watt [nW]')
+        self.empatica_graph_4.setLabel(axis='left', text='Seconds [s]')
         self.eeg_graph.addWidget(self.eegConstructor) 
         self.eeg_graph_1 = self.eegConstructor.addPlot(row=0, col=0, title = "EEG Data")
         self.eeg_graph_2 = self.eegConstructor.addPlot(row=1, col=0, title = "EEG Data")
@@ -186,43 +190,53 @@ class main_GUI(QMainWindow):
         data.to_csv(empatica_fileName, mode = 'a', header = False)
 
     # This function updates the EEG cap graphs once the system is activated.
-    def update_EEG_plot(self, y1, y2, y3, y4, y5, y6, y7, y8):
-        x1 = np.linspace(0,len(y1)-1,num= len(y1))     
-        x2 = np.linspace(0,len(y2)-1,num= len(y2))            
-        x3 = np.linspace(0,len(y3)-1,num= len(y3))
-        x4 = np.linspace(0,len(y4)-1,num= len(y4))
-        x5 = np.linspace(0,len(y5)-1,num= len(y5))     
-        x6 = np.linspace(0,len(y6)-1,num= len(y6))            
-        x7 = np.linspace(0,len(y7)-1,num= len(y7))
-        x8 = np.linspace(0,len(y8)-1,num= len(y8))
+    def update_EEG_plot(self, channel1_data, channel2_data, channel3_data, channel4_data, 
+                        channel5_data, channel6_data, channel7_data, 
+                        channel8_data, accx, accy, accz, channel1_numbers, channel2_numbers,
+                        channel3_numbers, channel4_numbers, channel5_numbers, channel6_numbers,
+                        channel7_numbers, channel8_numbers):
+        
+        x1 = np.linspace(0,len(channel1_numbers)-1,num= len(channel1_numbers))     
+        x2 = np.linspace(0,len(channel2_numbers)-1,num= len(channel2_numbers))            
+        x3 = np.linspace(0,len(channel3_numbers)-1,num= len(channel3_numbers))
+        x4 = np.linspace(0,len(channel4_numbers)-1,num= len(channel4_numbers))
+        x5 = np.linspace(0,len(channel5_numbers)-1,num= len(channel5_numbers))     
+        x6 = np.linspace(0,len(channel6_numbers)-1,num= len(channel6_numbers))            
+        x7 = np.linspace(0,len(channel7_numbers)-1,num= len(channel7_numbers))
+        x8 = np.linspace(0,len(channel8_numbers)-1,num= len(channel8_numbers))
 
         self.eeg_graph_1.clear()
-        self.eeg_graph_1.plot(x1, y1, pen=mkPen((169,50,38), width = 2))
+        self.eeg_graph_1.plot(x1, channel1_numbers, pen=mkPen((169,50,38), width = 2))
         self.eeg_graph_2.clear()
-        self.eeg_graph_2.plot(x2, y2, pen= mkPen((202,111,30), width = 2))
+        self.eeg_graph_2.plot(x2, channel2_numbers, pen= mkPen((202,111,30), width = 2))
         self.eeg_graph_3.clear()
-        self.eeg_graph_3.plot(x3, y3, pen=mkPen((212,172,13), width = 2))
+        self.eeg_graph_3.plot(x3, channel3_numbers, pen=mkPen((212,172,13), width = 2))
         self.eeg_graph_4.clear()
-        self.eeg_graph_4.plot(x4, y4, pen=mkPen((40,180,99), width = 2))
+        self.eeg_graph_4.plot(x4, channel4_numbers, pen=mkPen((40,180,99), width = 2))
         self.eeg_graph_5.clear()
-        self.eeg_graph_5.plot(x5, y5, pen=mkPen((25,111,61), width = 2))
+        self.eeg_graph_5.plot(x5, channel5_numbers, pen=mkPen((25,111,61), width = 2))
         self.eeg_graph_6.clear()
-        self.eeg_graph_6.plot(x6, y6, pen=mkPen((93,173,226), width = 2))
+        self.eeg_graph_6.plot(x6, channel6_numbers, pen=mkPen((93,173,226), width = 2))
         self.eeg_graph_7.clear()
-        self.eeg_graph_7.plot(x7, y7, pen=mkPen((46,134,193), width = 2))
+        self.eeg_graph_7.plot(x7, channel7_numbers, pen=mkPen((46,134,193), width = 2))
         self.eeg_graph_8.clear()
-        self.eeg_graph_8.plot(x8, y8, pen=mkPen((125,60,152), width = 2))
+        self.eeg_graph_8.plot(x8, channel8_numbers, pen=mkPen((125,60,152), width = 2))
 
     # This function will store the values in the EEG csv.
-    def update_EEG_csv(self, y1, y2, y3, y4, y5, y6, y7, y8):
-        data = pd.DataFrame({'ch1': pd.Series(y1),
-                             'ch2': pd.Series(y2),
-                             'ch3': pd.Series(y3),
-                             'ch4': pd.Series(y4),
-                             'ch5': pd.Series(y5),
-                             'ch6': pd.Series(y6),
-                             'ch7': pd.Series(y7),
-                             'ch8': pd.Series(y8)})
+    def update_EEG_csv(self, channel1_data, channel2_data, channel3_data, channel4_data, 
+                        channel5_data, channel6_data, channel7_data, 
+                        channel8_data, accx, accy, accz):
+        data = pd.DataFrame({'channel1_data': pd.Series(channel1_data),
+                             'channel2_data': pd.Series(channel2_data),
+                             'channel3_data': pd.Series(channel3_data),
+                             'channel4_data': pd.Series(channel4_data),
+                             'channel5_data': pd.Series(channel5_data),
+                             'channel6_data': pd.Series(channel6_data),
+                             'channel7_data': pd.Series(channel7_data),
+                             'channel8_data': pd.Series(channel8_data),
+                             'accx': pd.Series(accx),
+                             'accy': pd.Series(accy),
+                             'accz': pd.Series(accz)})
         # Use header as false to avoid printing the columns' header each time. 
         data.to_csv(eeg_fileName, mode = 'a', header = False)
 
@@ -357,37 +371,91 @@ class liveampThread(QThread):
     # This creates a signal to be sent to the main thread (the GUI). And since its original
     # declaration, when update_EEG is called, the values are sent to two functions:
     # update_EEG_plot() and update_EEG_plot(). 
-    update_EEG = pyqtSignal(list, list, list, list, list, list, list, list)
+    update_EEG = pyqtSignal(list, list, list, list, list, 
+                            list, list, list, list, list, list,
+                            list, list, list, list, list, list,
+                            list, list)
 
     # This is the method that is run automatically when the worker is started.
     def run(self):
         self.ThreadActive = True
+        # Function to connect EEG to Python LabStream Layer (pylsl)
+        def connect_to_EEG():
+            stream = pylsl.resolve_stream('type','EEG')
+            inlet = pylsl.stream_inlet(stream[0])
+            return inlet
+
+        inlet = connect_to_EEG()
+        inletInfo = inlet.info()
+        print('Connected to:',inletInfo.name(), 'with', inletInfo.channel_count(),'channels. Fs:',inletInfo.nominal_srate())
+        outletInfo = pylsl.StreamInfo('eeg', 'EEG', 8, 256, 'int32', '100005-0688')
+        outlet = pylsl.StreamOutlet(outletInfo)
+        inlet.time_correction()
+        date = datetime.now()
+        time0 = pylsl.local_clock() - inlet.time_correction()
+        
         while self.ThreadActive:
-            y1 = []
-            y2 = []
-            y3 = []
-            y4 = []
-            y5 = []
-            y6 = []
-            y7 = []
-            y8 = []
+            channel1_data = []
+            channel2_data = []
+            channel3_data = []
+            channel4_data = []
+            channel5_data = []
+            channel6_data = []
+            channel7_data = []
+            channel8_data = []
+            accx_data = []
+            accy_data = []
+            accz_data = []
+            channel1_numbers = []
+            channel2_numbers = []
+            channel3_numbers = []
+            channel4_numbers = []
+            channel5_numbers = []
+            channel6_numbers = []
+            channel7_numbers = []
+            channel8_numbers = []
+            sample, time_stamp = inlet.pull_chunk()
             
-            for _ in range(250):
-                y1.append(random.randint(1,20))
-                y2.append(random.randint(1,20))
-                y3.append(random.randint(1,20))
-                y4.append(random.randint(1,20))
-                y5.append(random.randint(1,20))
-                y6.append(random.randint(1,20))
-                y7.append(random.randint(1,20))
-                y8.append(random.randint(1,20))
+            if sample != []:
+                dates = []
+                for i in range(len(time_stamp)-1):
+                    timenow = time_stamp[i]-time0
+                    updateDate = str(date + timedelta(seconds=timenow))
+                    dates.append(updateDate)
+                #print(dates)
+                for i in range(len(sample)-1):
+                    sample_ms = sample[i]
+                    channel1_data.append([dates[i],sample_ms[0]])
+                    channel2_data.append([dates[i],sample_ms[1]])
+                    channel3_data.append([dates[i],sample_ms[2]])
+                    channel4_data.append([dates[i],sample_ms[3]])
+                    channel5_data.append([dates[i],sample_ms[4]])
+                    channel6_data.append([dates[i],sample_ms[5]])
+                    channel7_data.append([dates[i],sample_ms[6]])
+                    channel8_data.append([dates[i],sample_ms[7]])
+                    accx_data.append([dates[i],sample_ms[8]])
+                    accy_data.append([dates[i],sample_ms[9]])
+                    accz_data.append([dates[i],sample_ms[10]])
+                    #vectors to keep only the values of the electrodes, used to graph in real time
+                    channel1_numbers.append(int(sample_ms[0]))
+                    channel2_numbers.append(int(sample_ms[1]))
+                    channel3_numbers.append(int(sample_ms[2]))
+                    channel4_numbers.append(int(sample_ms[3]))
+                    channel5_numbers.append(int(sample_ms[4]))
+                    channel6_numbers.append(int(sample_ms[5]))
+                    channel7_numbers.append(int(sample_ms[6]))
+                    channel8_numbers.append(int(sample_ms[7]))
             
             # We share data with the main thread using the signal and the .emit() method.
             # Because the main thread is the only one able to plot things. Data can be
             # generated using threads, but any plotting or GUI stuff NEEDS to be done 
             # on the main thread.
-            self.update_EEG.emit(y1, y2, y3, y4, y5, y6, y7, y8)
-            time.sleep(2)
+            self.update_EEG.emit(channel1_data, channel2_data, channel3_data, channel4_data, 
+                                    channel5_data, channel6_data, channel7_data, channel8_data,
+                                    accx_data, accy_data, accz_data, channel1_numbers, channel2_numbers,
+                                    channel3_numbers, channel4_numbers, channel5_numbers, channel6_numbers,
+                                    channel7_numbers, channel8_numbers)
+            time.sleep(1)
 
 # # # # # GENERAL FUNCTIONS # # # # #
 
@@ -416,40 +484,19 @@ if __name__ == '__main__':
 
 #%%
 
-def hello():
-    print('Jalo')
+import cv2
+import numpy as np
+cam=cv2.VideoCapture(1)
+waitTime=50
 
-def go():
-    print('Yo también jalo')
+while (1):
+    ret,frame=cam.read()
+    cv2.imshow("frame",frame)
+    borderedFrame = cv2.copyMakeBorder(frame,10,10,10,10,cv2.BORDER_CONSTANT,value=[0,200,200])
+    cv2.imshow("bordered frame", borderedFrame)
+    if  cv2.waitKey(waitTime) & 0xFF==ord('q'):
+        break
 
-# cases = { 
-#     (True,  True,  True): [self.camera_activate(), self.eeg_activate(), self.empatica_activate()],
-#     (True,  True,  False): [self.camera_activate(), self.eeg_activate()],
-#     (True,  False,  True): [self.camera_activate(), self.empatica_activate()],
-#     (True,  False,  False): [self.camera_activate()],
-#     (False,  True, True): [self.eeg_activate(), self.empatica_activate()],
-#     (False,  True, False): [self.eeg_activate()],
-#     (False,  False, True): [self.empatica_activate()],
-#     (False,  False, False): [self.noDeviceSelected_popUp()],
-#     }
-
-cases = { 
-    (True,  True,  True): [hello, go],
-    (True,  False,  True): 'Hi',
-    (True,  True,  False): 'Hi',
-    (True,  False,  False): 'Hi',
-    (False,  True, True): 'Hi',
-    (False,  True, False): 'Hi',
-    (False,  False, True): 'Hi',
-    (False,  False, False): 'Hi',
-    }
-
-x=True
-y=True
-z=True
-
-def fire_all(func_list):
-    for f in func_list:
-        f()
-
-fire_all(cases[x,y,z])
+cam.release()
+cv2.destroyAllWindows()
+# %%
