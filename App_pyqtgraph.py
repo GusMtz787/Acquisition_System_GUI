@@ -26,6 +26,9 @@ downloads_path = ''
 video_fileName = ''
 emotions_fileName = ''
 eeg_fileName = ''
+# inlet variable is declared for the LiveAmp EEG device. It must be global 
+# because it is accessed in multiple functions.
+inlet = None
 
 # # # # # MAIN GUI CLASS DEFINITION # # # # #
 class main_GUI(QMainWindow):
@@ -76,6 +79,14 @@ class main_GUI(QMainWindow):
         self.eeg_graph_6 = self.eegConstructor.addPlot(row=1, col=1, title = "EEG Data")
         self.eeg_graph_7 = self.eegConstructor.addPlot(row=2, col=1, title = "EEG Data")
         self.eeg_graph_8 = self.eegConstructor.addPlot(row=3, col=1, title = "EEG Data")
+        self.eeg_graph_1.setLabel(axis='left', text='microVolt [µV]')
+        self.eeg_graph_2.setLabel(axis='left', text='microVolt [µV]')
+        self.eeg_graph_3.setLabel(axis='left', text='microVolt [µV]')
+        self.eeg_graph_4.setLabel(axis='left', text='microVolt [µV]')
+        self.eeg_graph_5.setLabel(axis='left', text='microVolt [µV]')
+        self.eeg_graph_6.setLabel(axis='left', text='microVolt [µV]')
+        self.eeg_graph_7.setLabel(axis='left', text='microVolt [µV]')
+        self.eeg_graph_8.setLabel(axis='left', text='microVolt [µV]')
         self.eeg_graph_1.setDownsampling(mode='peak') # Checar si dejar estos junto con setClipToView
         self.eeg_graph_2.setDownsampling(mode='peak')
         self.eeg_graph_3.setDownsampling(mode='peak')
@@ -160,6 +171,10 @@ class main_GUI(QMainWindow):
             self.empaticaThread.terminate()
         if (self.liveamp_checkBox.isChecked()):
             self.liveampThread.terminate()
+            # The inlet stream from the LiveAmp must be closed, otherwise it won't
+            # transmit data if it is executed once more afterwards.
+            global inlet
+            inlet.close_stream()
         self.state.setText("Waiting to start")
         self.state.setStyleSheet("color: rgb(0, 133, 199);")
         #saveData()
@@ -385,6 +400,7 @@ class liveampThread(QThread):
             inlet = pylsl.stream_inlet(stream[0])
             return inlet
 
+        global inlet
         inlet = connect_to_EEG()
         inletInfo = inlet.info()
         print('Connected to:',inletInfo.name(), 'with', inletInfo.channel_count(),'channels. Fs:',inletInfo.nominal_srate())
