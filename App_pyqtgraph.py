@@ -174,6 +174,8 @@ class main_GUI(QMainWindow):
             # The inlet stream from the LiveAmp must be closed, otherwise it won't
             # transmit data if it is executed once more afterwards.
             global inlet
+            inletInfo = inlet.info()
+            print("Closing {}".format(inletInfo.name))
             inlet.close_stream()
         self.state.setText("Waiting to start")
         self.state.setStyleSheet("color: rgb(0, 133, 199);")
