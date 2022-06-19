@@ -16,6 +16,7 @@ import pandas as pd
 import pylsl
 import random
 import time
+import socket
 
 from pyqtgraph.functions import mkColor, mkPen
 
@@ -29,6 +30,7 @@ eeg_fileName = ''
 # inlet variable is declared for the LiveAmp EEG device. It must be global 
 # because it is accessed in multiple functions.
 inlet = None
+empatica_ID = None
 
 # # # # # MAIN GUI CLASS DEFINITION # # # # #
 class main_GUI(QMainWindow):
@@ -50,10 +52,11 @@ class main_GUI(QMainWindow):
         global downloads_path
         downloads_path = str(Path.home() / "Downloads") # to get the user's downloads Path
         self.camera = 0
-        self.empatica_ID = "834ACD"
+        global empatica_ID
+        empatica_ID = "de6f5a"
         self.files_lineEdit.setPlaceholderText("default: " + downloads_path)
         self.camera_lineEdit.setPlaceholderText("default: " + str(self.camera))
-        self.idE4_lineEdit.setPlaceholderText("default: " + self.empatica_ID)
+        self.idE4_lineEdit.setPlaceholderText("default: " + empatica_ID)
         # Prepare Threads (not started)
         self.cameraThread = cameraThread()
         self.empaticaThread = empaticaThread()
@@ -182,27 +185,36 @@ class main_GUI(QMainWindow):
         #saveData()
     
     # This function updates the smartband graph once the system is activated.
-    def update_Empatica_Plot(self, y1, y2, y3, y4):
-        x1 = np.linspace(0,len(y1)-1,num= len(y1))     
-        x2 = np.linspace(0,len(y2)-1,num= len(y2))            
-        x3 = np.linspace(0,len(y3)-1,num= len(y3))
-        x4 = np.linspace(0,len(y4)-1,num= len(y4))
+    def update_Empatica_Plot(self, y1, y2, y3, y4, y5):
+        BVP = pd.DataFrame(y1, columns = ['BVP_timestamp', 'BVP_value'])
+        Tem = pd.DataFrame(y2, columns = ['Temperature_timestamp', 'Temperature_value'])
+        EDA = pd.DataFrame(y3, columns = ['EDA_timestamp', 'EDA_value'])
+        IBI = pd.DataFrame(y4, columns = ['IBI_timestamp', 'IBI_value'])
+        Acc = pd.DataFrame(y5, columns = ['Acc_timestamp', 'Acc_value'])
+
+        x1 = np.linspace(0,len(BVP['BVP_value'].to_list())-1,num= len(BVP['BVP_value'].to_list()))     
+        x2 = np.linspace(0,len(Tem['Temperature_value'].to_list())-1,num= len(Tem['Temperature_value'].to_list()))            
+        x3 = np.linspace(0,len(EDA['EDA_value'].to_list())-1,num= len(EDA['EDA_value'].to_list()))
+        x4 = np.linspace(0,len(IBI['IBI_value'].to_list())-1,num= len(IBI['IBI_value'].to_list()))
 
         self.empatica_graph_1.clear()
-        self.empatica_graph_1.plot(x1, y1, pen=mkPen('y', width = 2))
+        self.empatica_graph_1.plot(x1, BVP['BVP_value'].to_list(), pen=mkPen('y', width = 2))
         self.empatica_graph_2.clear()
-        self.empatica_graph_2.plot(x2, y2, pen=mkPen('g', width = 2))
+        self.empatica_graph_2.plot(x2, Tem['Temperature_value'].to_list(), pen=mkPen('g', width = 2))
         self.empatica_graph_3.clear()
-        self.empatica_graph_3.plot(x3, y3, pen=mkPen('b', width = 2))
+        self.empatica_graph_3.plot(x3, EDA['EDA_value'].to_list(), pen=mkPen('b', width = 2))
         self.empatica_graph_4.clear()
-        self.empatica_graph_4.plot(x4, y4, pen=mkPen('r', width = 2))
+        self.empatica_graph_4.plot(x4, IBI['IBI_value'].to_list(), pen=mkPen('r', width = 2))
     
     # This function will store the values in the EEG csv.
-    def update_Empatica_csv(self, y1, y2, y3, y4):
-        data = pd.DataFrame({'ch1': pd.Series(y1),
-                             'ch2': pd.Series(y2),
-                             'ch3': pd.Series(y3),
-                             'ch4': pd.Series(y4)})
+    def update_Empatica_csv(self, y1, y2, y3, y4, y5):
+        BVP = pd.DataFrame(y1, columns = ['BVP_timestamp', 'BVP_value'])
+        Tem = pd.DataFrame(y2, columns = ['Temperature_timestamp', 'Temperature_value'])
+        EDA = pd.DataFrame(y3, columns = ['EDA_timestamp', 'EDA_value'])
+        IBI = pd.DataFrame(y4, columns = ['IBI_timestamp', 'IBI_value'])
+        Acc = pd.DataFrame(y5, columns = ['Acc_timestamp', 'Acc_value'])
+
+        data = pd.concat([BVP, Tem, EDA, IBI, Acc], axis=1)
         # Use header as false to avoid printing the columns' header each time. 
         data.to_csv(empatica_fileName, mode = 'a', header = False)
 
@@ -292,7 +304,7 @@ class main_GUI(QMainWindow):
         # Create Empatica CSV file, which will be updated later.
         with open(empatica_fileName, 'w', newline = '') as document:
             writer = csv.writer(document)
-            writer.writerow(['Temperature', 'EDA', 'BVP', ' IBI'])
+            writer.writerow(['Index', 'BVP_timestamp', 'BVP_value', 'Temperature_timestamp', 'Temperature_value', 'EDA_timestamp', 'EDA_value', 'IBI_timestamp', 'IBI_value', 'Acc_timestamp', 'Acc_value'])
 
     def run_functions(self, func_list):
         for function in func_list:
@@ -358,30 +370,171 @@ class cameraThread(QThread):
 # Empatica data acquisition
 class empaticaThread(QThread):
     # This creates a signal to be sent to the main thread (the GUI)
-    update_empatica = pyqtSignal(list, list, list, list)
+    update_empatica = pyqtSignal(list, list, list, list, list)
 
     # This is the method that is run automatically when the worker is started.
     def run(self):
-        self.ThreadActive = True
-        while self.ThreadActive:
-            y1 = []
-            y2 = []
-            y3 = []
-            y4 = []
-            for _ in range(4):  
-                y1.append(random.randint(1,20))
-                y2.append(random.randint(1,20))
-            for _ in range(64):
-                y3.append(random.randint(1,20))
-            for _ in range(2):
-                y4.append(random.randint(1,20))
+        # SELECT DATA TO STREAM
+        acc = True      # 3-axis acceleration
+        bvp = True      # Blood Volume Pulse
+        gsr = True      # Galvanic Skin Response (Electrodermal Activity)
+        tmp = True      # Temperature
+        ibi = True
+
+        serverAddress = '127.0.0.1'  #'FW 2.1.0' #'127.0.0.1'
+        serverPort = 28000 #28000 #4911
+        bufferSize = 4096
+
+        def connect():
+            global s
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(3)
+
+            print("Connecting to server")
+            s.connect((serverAddress, serverPort))
+            print("Connected to server\n")
+
+            print("Devices available:")
+            s.send("device_list\r\n".encode())
+            response = s.recv(bufferSize)
+            print(response.decode("utf-8"))
+
+            print("Connecting to device")
+            s.send(("device_connect " + empatica_ID + "\r\n").encode())
+            response = s.recv(bufferSize)
+            print(response.decode("utf-8"))
+
+            print("Pausing data receiving")
+            s.send("pause ON\r\n".encode())
+            response = s.recv(bufferSize)
+            print(response.decode("utf-8"))
             
-            # We share data with the main thread using the signal and the .emit() method.
-            # Because the main thread is the only one able to graph things. Data can be
-            # generated using threads, but any plotting or GUI stuff NEEDS to be done 
-            # on the main thread.
-            self.update_empatica.emit(y1, y2, y3, y4)
-            time.sleep(2)
+        connect()
+
+        time.sleep(1)
+
+        def suscribe_to_data():
+            if acc:
+                print("Suscribing to ACC")
+                s.send(("device_subscribe " + 'acc' + " ON\r\n").encode())
+                response = s.recv(bufferSize)
+                print(response.decode("utf-8"))
+            if bvp:
+                print("Suscribing to BVP")
+                s.send(("device_subscribe " + 'bvp' + " ON\r\n").encode())
+                response = s.recv(bufferSize)
+                print(response.decode("utf-8"))
+            if gsr:
+                print("Suscribing to GSR")
+                s.send(("device_subscribe " + 'gsr' + " ON\r\n").encode())
+                response = s.recv(bufferSize)
+                print(response.decode("utf-8"))
+            if tmp:
+                print("Suscribing to Temp")
+                s.send(("device_subscribe " + 'tmp' + " ON\r\n").encode())
+                response = s.recv(bufferSize)
+                print(response.decode("utf-8"))
+            if ibi:
+                print("Suscribing to Ibi")
+                s.send(("device_subscribe " + 'ibi' + " ON\r\n").encode())
+                response = s.recv(bufferSize)
+                print(response.decode("utf-8"))
+
+            print("Resuming data receiving")
+            s.send("pause OFF\r\n".encode())
+            response = s.recv(bufferSize)
+            print(response.decode("utf-8"))
+        
+        suscribe_to_data()
+
+        def prepare_LSL_streaming():
+            print("Starting LSL streaming")
+            if acc:
+                infoACC = pylsl.StreamInfo('acc','ACC',3,32,'int32','ACC-empatica_e4')
+                global outletACC
+                outletACC = pylsl.StreamOutlet(infoACC)
+            if bvp:
+                infoBVP = pylsl.StreamInfo('bvp','BVP',1,64,'float32','BVP-empatica_e4')
+                global outletBVP
+                outletBVP = pylsl.StreamOutlet(infoBVP)
+            if gsr:
+                infoGSR = pylsl.StreamInfo('gsr','GSR',1,4,'float32','GSR-empatica_e4')
+                global outletGSR
+                outletGSR = pylsl.StreamOutlet(infoGSR)
+            if tmp:
+                infoTemp = pylsl.StreamInfo('tmp','Temp',1,4,'float32','Temp-empatica_e4')
+                global outletTemp
+                outletTemp = pylsl.StreamOutlet(infoTemp)
+            if ibi:
+                infoIbi = pylsl.StreamInfo('ibi','Ibi',1,2,'float32','IBI-empatica_e4')
+                global outletIbi
+                outletIbi = pylsl.StreamOutlet(infoIbi)
+        prepare_LSL_streaming()
+
+        time.sleep(1)
+
+        self.ThreadActive = True
+        
+        while self.ThreadActive:
+            Accelerometers = []
+            BVP = []
+            Temperature = []
+            EDA = []
+            IBI = []
+            
+            print("Streaming...")
+            response = s.recv(bufferSize).decode("utf-8")
+            samples = response.split("\n") #Variable "samples" contains all the information collected from the wristband.
+            print(samples)
+            # We need to clean every temporal array before entering the for loop.
+            for i in range(len(samples)-1):
+                try:
+                    stream_type = samples[i].split()[0]
+                except:
+                    continue
+                if (stream_type == "E4_Acc"):
+                    timestamp = float(samples[i].split()[1].replace(',','.'))
+                    data = [int(samples[i].split()[2].replace(',','.')), int(samples[i].split()[3].replace(',','.')), int(samples[i].split()[4].replace(',','.'))]
+                    outletACC.push_sample(data, timestamp=timestamp)
+                    timestamp = datetime.fromtimestamp(timestamp)
+                    #print(data)#Added in 02/12/20 to show values
+                    ACC_tuple = (timestamp.strftime('%Y-%m-%d %H:%M:%S.%f'), data)
+                    Accelerometers.append(ACC_tuple)
+                if stream_type == "E4_Bvp":
+                    timestamp = float(samples[i].split()[1].replace(',','.'))
+                    data = float(samples[i].split()[2].replace(',','.'))
+                    outletBVP.push_sample([data], timestamp=timestamp)
+                    timestamp = datetime.fromtimestamp(timestamp)
+                    #print(data)
+                    BVP_tuple = (timestamp.strftime('%Y-%m-%d %H:%M:%S.%f'), data)
+                    BVP.append(BVP_tuple)
+                if stream_type == "E4_Gsr":
+                    timestamp = float(samples[i].split()[1].replace(',','.'))
+                    data = float(samples[i].split()[2].replace(',','.'))
+                    outletGSR.push_sample([data], timestamp=timestamp)
+                    timestamp = datetime.fromtimestamp(timestamp)
+                    #print(data)
+                    GSR_tuple = (timestamp.strftime('%Y-%m-%d %H:%M:%S.%f'), data)
+                    EDA.append(GSR_tuple)
+                if stream_type == "E4_Temperature":
+                    timestamp = float(samples[i].split()[1].replace(',','.'))
+                    data = float(samples[i].split()[2].replace(',','.'))
+                    outletTemp.push_sample([data], timestamp=timestamp)
+                    timestamp = datetime.fromtimestamp(timestamp)
+                    #print(data)
+                    Temp_tuple = (timestamp.strftime('%Y-%m-%d %H:%M:%S.%f'), data)
+                    Temperature.append(Temp_tuple)
+                if stream_type == "E4_Ibi":
+                    timestamp = float(samples[i].split()[1].replace(',','.'))
+                    data = float(samples[i].split()[2].replace(',','.'))
+                    outletIbi.push_sample([data], timestamp=timestamp)
+                    timestamp = datetime.fromtimestamp(timestamp)
+                    #print(data)
+                    IBI_tuple = (timestamp.strftime('%Y-%m-%d %H:%M:%S.%f'), data)
+                    IBI.append(IBI_tuple)
+
+            self.update_empatica.emit(BVP, Temperature, EDA, IBI, Accelerometers)
+            time.sleep(1)
 
 # EEG data acquisition
 class liveampThread(QThread):
