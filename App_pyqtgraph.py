@@ -655,19 +655,19 @@ if __name__ == '__main__':
 
 #%%
 
-import cv2
-import numpy as np
-cam=cv2.VideoCapture(1)
-waitTime=50
+#import cv2
+#import numpy as np
+#cam=cv2.VideoCapture(1)
+#waitTime=50
 
-while (1):
-    ret,frame=cam.read()
-    cv2.imshow("frame",frame)
-    borderedFrame = cv2.copyMakeBorder(frame,10,10,10,10,cv2.BORDER_CONSTANT,value=[0,200,200])
-    cv2.imshow("bordered frame", borderedFrame)
-    if  cv2.waitKey(waitTime) & 0xFF==ord('q'):
-        break
+#while (1):
+#    ret,frame=cam.read()
+#    cv2.imshow("frame",frame)
+#    borderedFrame = cv2.copyMakeBorder(frame,10,10,10,10,cv2.BORDER_CONSTANT,value=[0,200,200])
+#    cv2.imshow("bordered frame", borderedFrame)
+#    if  cv2.waitKey(waitTime) & 0xFF==ord('q'):
+#        break
 
-cam.release()
-cv2.destroyAllWindows()
+#cam.release()
+#cv2.destroyAllWindows()
 # %%
